@@ -21,7 +21,12 @@ class HealthController extends Controller
     public function __invoke(): JsonResponse
     {
         try {
-            $this->db->connection()->select('select 1');
+            $connection = $this->db->connection();
+
+            // Connect before querying: a failed connect is then reported once,
+            // instead of being retried again by the query runner.
+            $connection->getPdo();
+            $connection->select('select 1');
         } catch (Throwable $e) {
             Log::error('Health check failed: database unavailable.', [
                 'exception' => $e,

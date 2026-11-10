@@ -8,6 +8,8 @@ Laravel API and admin panel, backed by PostgreSQL.
 - Composer 2
 - Docker, for the local database
 
+To run the whole stack in containers instead, see [Running locally](../README.md#running-locally) in the root README.
+
 ## Local setup
 
 From this directory:
@@ -18,10 +20,15 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-Set a password in `DB_PASSWORD` inside `.env`, then start the database and run the migrations:
+Start only the database from the stack, at the repository root (it uses the root `.env`):
 
 ```sh
-docker compose up -d --wait
+docker compose up -d --wait db
+```
+
+Then set `DB_PASSWORD` in `backend/.env` to the same value as in the root `.env`, and run:
+
+```sh
 php artisan migrate
 php artisan serve
 ```
