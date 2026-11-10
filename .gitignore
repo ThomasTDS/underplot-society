@@ -1,0 +1,24 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+.next/
+out/
+dist/
+build/
+
+# Test artifacts
+playwright-report/
+test-results/
+coverage/
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
