@@ -101,4 +101,4 @@ BREAKING CHANGE: the API now returns `slug` instead of `path`.
 
 ## Status
 
-Early development. Nothing to run yet.
+Early development. The backend API runs locally with a health check; see [`backend/README.md`](backend/README.md).
