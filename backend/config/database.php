@@ -101,6 +101,10 @@ return [
                 // Fail fast when the database is unreachable (driver default: 30 s).
                 PDO::ATTR_TIMEOUT => (int) env('DB_CONNECT_TIMEOUT', 3),
             ] : [],
+            'server_options' => [
+                // Server-side limit per query, in milliseconds (0 disables it).
+                'statement_timeout' => (int) env('DB_STATEMENT_TIMEOUT', 5000),
+            ],
         ],
 
         'sqlsrv' => [
