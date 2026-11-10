@@ -101,4 +101,4 @@ BREAKING CHANGE: the API now returns `slug` instead of `path`.
 
 ## Status
 
-Early development. The backend API runs locally with a health check; see [`backend/README.md`](backend/README.md).
+Early development. The backend API runs locally with a health check, and the frontend home page shows its status. See [`backend/README.md`](backend/README.md) and [`frontend/README.md`](frontend/README.md).
