@@ -1,0 +1,33 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+}
+
+.code {
+  margin: 0;
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  line-height: 1;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.body {
+  margin: 0;
+}
+
+.link {
+  color: var(--color-gold);
+}

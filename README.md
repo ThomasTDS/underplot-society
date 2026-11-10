@@ -128,4 +128,4 @@ To work on one side without containers, see [`backend/README.md`](backend/README
 
 ## Status
 
-Early development. The stack runs locally with one command: the API exposes a health check, and the site home page shows the API status.
+Early development. The stack runs locally with one command: the API exposes a health check, and the site home page shows the API status in English, Brazilian Portuguese and Spanish.

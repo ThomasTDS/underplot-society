@@ -1,10 +1,15 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import axe from "axe-core";
 import { afterEach, describe, expect, it } from "vitest";
+import { locales } from "@/i18n/config";
+import { getMessages } from "@/i18n/dictionaries";
 import type { ApiStatus as Status } from "@/lib/api-status";
 import { ApiStatus, ApiStatusPending } from "./ApiStatus";
 
 afterEach(cleanup);
+
+const statuses: Status[] = ["operational", "degraded", "unreachable"];
+const labels = getMessages("en").status;
 
 async function accessibilityViolations(container: HTMLElement) {
   const results = await axe.run(container, {
@@ -15,40 +20,40 @@ async function accessibilityViolations(container: HTMLElement) {
 }
 
 describe("ApiStatus", () => {
-  it.each<[Status, string]>([
-    ["operational", "Operational"],
-    ["degraded", "Degraded: the database is unavailable"],
-    ["unreachable", "Unreachable"],
-  ])("states the %s status in text, not only by colour", (status, label) => {
-    render(<ApiStatus status={status} />);
+  it.each(locales.flatMap((locale) => statuses.map((status) => [locale, status] as const)))(
+    "states the %s %s status in text, not only by colour",
+    (locale, status) => {
+      const localized = getMessages(locale).status;
+      render(<ApiStatus status={status} labels={localized} />);
 
-    expect(screen.getByText(label)).toBeTruthy();
-    expect(screen.getByText(/API status:/).textContent).toBe(`API status: ${label}`);
-  });
+      expect(screen.getByText(localized[status])).toBeTruthy();
+      expect(screen.getByText(localized.label, { exact: false }).textContent).toBe(
+        `${localized.label} ${localized[status]}`,
+      );
+    },
+  );
 
   it("hides the coloured marker from assistive technology", () => {
-    const { container } = render(<ApiStatus status="operational" />);
+    const { container } = render(<ApiStatus status="operational" labels={labels} />);
 
     const marker = container.querySelector("span[aria-hidden='true']");
     expect(marker).not.toBeNull();
     expect(marker?.textContent).toBe("");
   });
 
-  it.each<Status>(["operational", "degraded", "unreachable"])(
-    "has no accessibility violations when %s",
-    async (status) => {
-      const { container } = render(<ApiStatus status={status} />);
+  it.each(statuses)("has no accessibility violations when %s", async (status) => {
+    const { container } = render(<ApiStatus status={status} labels={labels} />);
 
-      expect(await accessibilityViolations(container)).toEqual([]);
-    },
-  );
+    expect(await accessibilityViolations(container)).toEqual([]);
+  });
 });
 
 describe("ApiStatusPending", () => {
-  it("tells the reader the status is being checked", async () => {
-    const { container } = render(<ApiStatusPending />);
+  it.each(locales)("tells the reader the status is being checked (%s)", async (locale) => {
+    const localized = getMessages(locale).status;
+    const { container } = render(<ApiStatusPending labels={localized} />);
 
-    expect(screen.getByText("Checking API status…")).toBeTruthy();
+    expect(screen.getByText(localized.checking)).toBeTruthy();
     expect(await accessibilityViolations(container)).toEqual([]);
   });
 });
