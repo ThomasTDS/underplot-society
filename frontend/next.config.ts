@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   // Do not advertise the framework in response headers.
   poweredByHeader: false,
+  // Self-contained server output for the container image.
+  output: "standalone",
 };
 
 export default nextConfig;

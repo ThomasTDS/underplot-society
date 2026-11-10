@@ -1,0 +1,88 @@
+# Full local stack: PostgreSQL, Laravel API and Next.js site.
+# Secrets come from the .env file next to this one (see .env.example).
+name: underplot
+
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+x-backend: &backend
+  <<: *hardening
+  build:
+    context: backend
+    dockerfile: Dockerfile
+  image: underplot-backend:local
+  # A stopped database container leaves "db" unresolvable; fail that lookup
+  # in about 1 s instead of the resolver's default 5 s.
+  dns_opt:
+    - timeout:1
+    - attempts:1
+  environment:
+    APP_KEY: ${APP_KEY:?Set APP_KEY in .env}
+    APP_URL: http://127.0.0.1:${BACKEND_PORT:-8000}
+    DB_CONNECTION: pgsql
+    DB_HOST: db
+    DB_PORT: "5432"
+    DB_DATABASE: ${DB_DATABASE:-underplot}
+    DB_USERNAME: ${DB_USERNAME:-underplot}
+    DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+
+services:
+  db:
+    <<: *hardening
+    image: postgres:18.6-alpine3.24
+    user: postgres
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-underplot}
+      POSTGRES_USER: ${DB_USERNAME:-underplot}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    ports:
+      # Localhost only. Also used by the backend when it runs outside Docker.
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  migrate:
+    <<: *backend
+    command: ["php", "artisan", "migrate", "--force", "--no-interaction"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    <<: *backend
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  frontend:
+    <<: *hardening
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    image: underplot-frontend:local
+    environment:
+      API_BASE_URL: http://backend:8000
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  db-data:

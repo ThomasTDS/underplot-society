@@ -99,6 +99,33 @@ feat(backend)!: rename article slug field
 BREAKING CHANGE: the API now returns `slug` instead of `path`.
 ```
 
+## Running locally
+
+Requires Docker. One-time setup, at the repository root:
+
+```sh
+cp .env.example .env
+```
+
+Fill in the two required values in `.env`: `APP_KEY` (generate with `echo "base64:$(openssl rand -base64 32)"`) and `DB_PASSWORD`. Then:
+
+```sh
+docker compose up --build
+```
+
+This starts PostgreSQL, runs the database migrations, and starts the API and the site:
+
+| Service | URL |
+|---|---|
+| Site | http://127.0.0.1:3000 |
+| API health check | http://127.0.0.1:8000/api/health |
+
+All ports are bound to `127.0.0.1`. Every container runs as a non-root user, with all Linux capabilities dropped and privilege escalation disabled.
+
+> On Windows, run Docker Compose from PowerShell or Command Prompt. From Git Bash, the build can fail with an `additional privileges requested` error caused by its path translation.
+
+To work on one side without containers, see [`backend/README.md`](backend/README.md) and [`frontend/README.md`](frontend/README.md).
+
 ## Status
 
-Early development. The backend API runs locally with a health check, and the frontend home page shows its status. See [`backend/README.md`](backend/README.md) and [`frontend/README.md`](frontend/README.md).
+Early development. The stack runs locally with one command: the API exposes a health check, and the site home page shows the API status.
