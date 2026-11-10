@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { HomePage } from "../pages/HomePage";
-import { htmlLang, locales } from "../support/locales";
+import { HomePage } from "../../pages/HomePage";
+import { htmlLang, locales } from "../../support/locales";
 
 for (const locale of locales) {
   test.describe(`home page (${locale})`, () => {
