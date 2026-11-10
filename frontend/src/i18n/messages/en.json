@@ -1,0 +1,18 @@
+{
+  "home": {
+    "tagline": "Beneath the Surface."
+  },
+  "status": {
+    "heading": "System status",
+    "label": "API status:",
+    "checking": "Checking API status…",
+    "operational": "Operational",
+    "degraded": "Degraded: the database is unavailable",
+    "unreachable": "Unreachable"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "This page does not exist or has moved.",
+    "home": "Go to the home page"
+  }
+}

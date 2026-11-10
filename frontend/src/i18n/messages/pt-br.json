@@ -1,0 +1,18 @@
+{
+  "home": {
+    "tagline": "Beneath the Surface."
+  },
+  "status": {
+    "heading": "Status do sistema",
+    "label": "Status da API:",
+    "checking": "Verificando o status da API…",
+    "operational": "Operacional",
+    "degraded": "Instável: o banco de dados está indisponível",
+    "unreachable": "Fora do ar"
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "body": "Esta página não existe ou mudou de endereço.",
+    "home": "Ir para a página inicial"
+  }
+}
