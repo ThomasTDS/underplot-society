@@ -33,6 +33,7 @@ Decisions are recorded as ADRs in [`docs/adr/`](docs/adr/).
 | [002](docs/adr/002-monorepo.md) | Monorepo |
 | [003](docs/adr/003-identity-and-name.md) | Identity and name |
 | [004](docs/adr/004-zero-operating-cost.md) | Zero operating cost |
+| [005](docs/adr/005-hosting.md) | Hosting on an Oracle Cloud free VM behind Cloudflare |
 
 ## Workflow
 
