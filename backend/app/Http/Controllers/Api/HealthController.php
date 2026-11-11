@@ -18,7 +18,7 @@ class HealthController extends Controller
      * Failure details go to the log only; the response never exposes
      * hosts, paths, credentials or driver messages.
      */
-    public function __invoke(): JsonResponse
+    public function __invoke():JsonResponse
     {
         try {
             $connection = $this->db->connection();
