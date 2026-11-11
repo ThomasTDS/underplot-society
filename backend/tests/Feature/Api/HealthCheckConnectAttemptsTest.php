@@ -15,6 +15,9 @@ class HealthCheckConnectAttemptsTest extends TestCase
         {
             public int $attempts = 0;
 
+            /**
+             * @param  array<int, mixed>  $options
+             */
             protected function createPdoConnection($dsn, $username, #[\SensitiveParameter] $password, $options)
             {
                 $this->attempts++;

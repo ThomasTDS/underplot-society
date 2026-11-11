@@ -1,0 +1,11 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - bootstrap/app.php
+        - routes
+        - tests
+    # 0 (loosest) to 10 (strictest). Raise it as the codebase grows.
+    level: 8

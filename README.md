@@ -54,7 +54,19 @@ Every change reaches `main` through a pull request, even with a single maintaine
 
 - Pull requests are **squash merged**, so each one becomes a single commit on `main`.
 - The pull request title becomes that commit message, so it must follow the commit convention below.
-- Once CI is in place, a pull request is merged only with all checks green.
+- A pull request is merged only with all CI checks green (see below).
+
+### Continuous integration
+
+Every pull request and every push to `main` runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml). All three jobs are required to merge:
+
+| Job | Checks |
+|---|---|
+| Backend | Code style (Pint), static analysis (Larastan, level 8), PHP tests against PostgreSQL |
+| Frontend | ESLint, TypeScript, unit and component tests (including accessibility checks), production build |
+| End-to-end | Starts the full stack with Docker Compose, then runs the Playwright browser and API tests, including the database-down case. Runs only when the first two jobs pass. |
+
+The Playwright reports and failure traces are attached to each run as the `playwright-report` artifact. Third-party actions are pinned to a full commit hash.
 
 ### Commits
 
