@@ -6,6 +6,7 @@
   },
   "scripts": {
     "test": "playwright test",
+    "test:db-down": "node scripts/run-db-down.mjs",
     "report": "playwright show-report",
     "typecheck": "tsc --noEmit"
   },
