@@ -4,7 +4,9 @@ namespace Tests\Feature\Api;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class HealthCheckTest extends TestCase
@@ -42,7 +44,7 @@ class HealthCheckTest extends TestCase
     public function test_it_returns_a_generic_503_when_the_database_is_unreachable(): void
     {
         $this->useUnreachableDatabase(port: 1);
-        Log::spy();
+        $log = Log::spy();
 
         $response = $this->getJson('/api/health')
             ->assertStatus(503)
@@ -50,8 +52,8 @@ class HealthCheckTest extends TestCase
             ->assertHeader('Content-Type', 'application/json')
             ->assertHeader('Cache-Control', 'no-store, private');
 
-        $this->assertNoInternalDetails($response->getContent());
-        Log::shouldHaveReceived('error')->once();
+        $this->assertNoInternalDetails($this->contentOf($response));
+        $log->shouldHaveReceived('error')->once();
     }
 
     // c) Database hung: accepts the TCP connection but never answers.
@@ -95,8 +97,8 @@ class HealthCheckTest extends TestCase
         $response = $this->call($method, $uri, server: ['HTTP_ACCEPT' => 'text/html']);
 
         $response->assertStatus($status)->assertHeader('Content-Type', 'application/json');
-        $this->assertJson($response->getContent());
-        $this->assertStringNotContainsStringIgnoringCase('<html', $response->getContent());
+        $this->assertJson($this->contentOf($response));
+        $this->assertStringNotContainsStringIgnoringCase('<html', $this->contentOf($response));
     }
 
     // e) Debug off: no exception details in error responses.
@@ -124,7 +126,7 @@ class HealthCheckTest extends TestCase
         foreach (['exception', 'file', 'line', 'trace'] as $key) {
             $response->assertJsonMissingPath($key);
         }
-        $this->assertNoInternalDetails($response->getContent());
+        $this->assertNoInternalDetails($this->contentOf($response));
     }
 
     public function test_the_503_body_stays_generic_even_if_debug_is_forced_on(): void
@@ -134,7 +136,7 @@ class HealthCheckTest extends TestCase
 
         $response = $this->getJson('/api/health')->assertStatus(503)->assertExactJson(self::ERROR_BODY);
 
-        $this->assertNoInternalDetails($response->getContent());
+        $this->assertNoInternalDetails($this->contentOf($response));
     }
 
     // f) Only GET (and HEAD) are allowed.
@@ -164,7 +166,7 @@ class HealthCheckTest extends TestCase
             ->assertExactJson(['status' => 'ok']);
 
         foreach (['probe', 'script', 'alert', 'hacked'] as $needle) {
-            $this->assertStringNotContainsString($needle, $response->getContent());
+            $this->assertStringNotContainsString($needle, $this->contentOf($response));
         }
     }
 
@@ -190,8 +192,8 @@ class HealthCheckTest extends TestCase
 
         foreach ($response->headers->all() as $name => $values) {
             foreach ($values as $value) {
-                $this->assertStringNotContainsString(PHP_VERSION, $value, "Header {$name} exposes the PHP version.");
-                $this->assertStringNotContainsStringIgnoringCase('php/', $value, "Header {$name} exposes PHP.");
+                $this->assertStringNotContainsString(PHP_VERSION, (string) $value, "Header {$name} exposes the PHP version.");
+                $this->assertStringNotContainsStringIgnoringCase('php/', (string) $value, "Header {$name} exposes PHP.");
             }
         }
     }
@@ -219,7 +221,7 @@ class HealthCheckTest extends TestCase
         $response = $this->call('GET', $uri, server: ['HTTP_ACCEPT' => 'text/html']);
 
         $response->assertNotFound()->assertHeader('Content-Type', 'application/json');
-        $this->assertStringNotContainsStringIgnoringCase('<html', $response->getContent());
+        $this->assertStringNotContainsStringIgnoringCase('<html', $this->contentOf($response));
     }
 
     /**
@@ -248,12 +250,25 @@ class HealthCheckTest extends TestCase
      */
     private function startHungServer(): int
     {
-        $this->hungServer = stream_socket_server('tcp://127.0.0.1:0', $errno, $error);
-        $this->assertIsResource($this->hungServer, "Could not open a local socket: {$error}");
+        $server = stream_socket_server('tcp://127.0.0.1:0', $errno, $error);
+        $this->assertIsResource($server, "Could not open a local socket: {$error}");
+        $this->hungServer = $server;
 
-        $address = stream_socket_get_name($this->hungServer, false);
+        $address = stream_socket_get_name($server, false);
+        $this->assertIsString($address);
 
         return (int) substr($address, strrpos($address, ':') + 1);
+    }
+
+    /**
+     * @param  TestResponse<Response>  $response
+     */
+    private function contentOf(TestResponse $response): string
+    {
+        $content = $response->getContent();
+        $this->assertIsString($content);
+
+        return $content;
     }
 
     private function assertNoInternalDetails(string $body): void

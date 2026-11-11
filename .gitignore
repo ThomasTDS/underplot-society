@@ -14,7 +14,7 @@ dist/
 build/
 
 # Test artifacts
-playwright-report/
+playwright-report*/
 test-results/
 coverage/
 

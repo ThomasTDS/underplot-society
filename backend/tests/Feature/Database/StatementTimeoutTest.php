@@ -16,7 +16,7 @@ class StatementTimeoutTest extends TestCase
     {
         // phpunit.xml points DB_DATABASE at SQLite for the rest of the suite.
         config([
-            'database.connections.pgsql.database' => env('DB_TEST_PGSQL_DATABASE', 'underplot'),
+            'database.connections.pgsql.database' => getenv('DB_TEST_PGSQL_DATABASE') ?: 'underplot',
             'database.connections.pgsql.server_options.statement_timeout' => 200,
         ]);
         DB::purge('pgsql');

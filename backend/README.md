@@ -71,6 +71,7 @@ Debug mode can only be enabled when `APP_ENV=local`. In any other environment `A
 ```sh
 php artisan test        # test suite
 vendor/bin/pint --test  # code style
+vendor/bin/phpstan analyse  # static analysis (Larastan, level 8)
 composer audit          # known vulnerabilities in dependencies
 ```
 
