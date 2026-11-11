@@ -59,15 +59,28 @@ Every change reaches `main` through a pull request, even with a single maintaine
 
 ### Continuous integration
 
-Every pull request and every push to `main` runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml). All three jobs are required to merge:
+Every pull request and every push to `main` runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml). All four jobs are required to merge:
 
 | Job | Checks |
 |---|---|
 | Backend | Code style (Pint), static analysis (Larastan, level 8), PHP tests against PostgreSQL |
 | Frontend | ESLint, TypeScript, unit and component tests (including accessibility checks), production build |
-| End-to-end | Starts the full stack with Docker Compose, then runs the Playwright browser and API tests, including the database-down case. Runs only when the first two jobs pass. |
+| Dependency audit | `composer audit` and `npm audit` on every lock file. High and critical advisories fail the job. |
+| End-to-end | Starts the full stack with Docker Compose, then runs the Playwright browser and API tests, including the database-down case. Runs only when Backend and Frontend pass. |
 
 The Playwright reports and failure traces are attached to each run as the `playwright-report` artifact. Third-party actions are pinned to a full commit hash.
+
+### Security scanning
+
+| Tool | Covers | Runs |
+|---|---|---|
+| [CodeQL](.github/workflows/code-scanning.yml) | TypeScript and the GitHub Actions workflows | Every pull request, every push to `main`, weekly |
+| [Semgrep](.github/workflows/code-scanning.yml) (Community Edition, PHP rules) | The Laravel backend, which CodeQL does not support | Same as CodeQL |
+| [Dependabot](.github/dependabot.yml) | Composer, npm, GitHub Actions and Docker images | Security alerts and fixes as advisories appear; version updates weekly |
+
+Findings appear under the repository's Security tab and on the pull request diff. A pull request with a high or critical security finding, or an error-level finding, cannot be merged.
+
+Dependabot waits 14 days after a release before proposing a version update, so a broken or compromised release has time to be caught upstream. Security updates are not delayed.
 
 ### Commits
 
