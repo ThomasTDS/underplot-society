@@ -58,7 +58,7 @@ jobs:
       # Semgrep Community Edition with the public PHP rules. No account or token is used.
       - name: Scan the backend
         run: |
-          docker run --rm --user "$(id -u):$(id -g)" \
+          docker run --rm --user "$(id -u):$(id -g)" --env HOME=/tmp \
             --volume "$PWD:/src" --workdir /src \
             semgrep/semgrep:1.182.0@sha256:4a34048c04fef049f71665047f074cffb00cc3d89482f965a5cd151d589237af \
             semgrep scan --config p/php --metrics=off \
