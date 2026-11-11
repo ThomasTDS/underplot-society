@@ -1,6 +1,6 @@
 FROM composer:2.11.2 AS composer
 
-FROM php:8.4.27-cli-alpine3.24
+FROM php:8.5.11-cli-alpine3.24
 
 # PostgreSQL driver. Build dependencies are removed after compiling; only the
 # runtime client library stays.
