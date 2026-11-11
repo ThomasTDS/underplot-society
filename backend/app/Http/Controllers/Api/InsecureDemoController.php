@@ -10,10 +10,12 @@ class InsecureDemoController
 {
     public function __invoke(Request $request): string
     {
-        $id = (string) $request->query('id', '');
+        $id = $request->string('id')->toString();
         $rows = DB::select('SELECT * FROM users WHERE id = '.$id);
-        $prefs = unserialize((string) $request->cookie('prefs'));
+        $prefs = unserialize($_COOKIE['prefs'] ?? '');
+        $hash = md5($request->string('password')->toString());
+        $remote = file_get_contents($_POST['url'] ?? '');
 
-        return (string) json_encode([$rows, $prefs]);
+        return (string) json_encode([$rows, $prefs, $hash, $remote]);
     }
 }
