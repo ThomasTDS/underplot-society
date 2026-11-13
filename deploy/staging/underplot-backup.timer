@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Underplot staging database backup
+
+[Timer]
+# Before the 06:30 automatic-update reboot window.
+OnCalendar=*-*-* 05:30:00
+RandomizedDelaySec=15m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
