@@ -77,7 +77,7 @@ Needs: an Ubuntu 24.04 server reachable by SSH with a key, a Cloudflare zone, an
 
 When CI passes on `main`, the [Images workflow](../.github/workflows/images.yml) builds the backend and frontend images on native x86 and ARM runners and publishes them to GitHub Container Registry as `ghcr.io/thomastds/underplot-backend` and `underplot-frontend`, tagged with the commit SHA and `main`. The server never builds anything.
 
-A successful Images run triggers the [Deploy workflow](../.github/workflows/deploy.yml), so every merge reaches staging on its own: **CI → Images → Deploy**. Deploy connects to the server over SSH, runs `deploy.sh` with the commit SHA, then checks `/api/health` through Cloudflare. Deploys run one at a time and are never cancelled halfway. Each one is listed under the repository's **Environments → staging**.
+A successful Images run triggers the [Deploy workflow](../.github/workflows/deploy.yml), so every merge reaches staging on its own: **CI → Images → Deploy**. Deploy connects to the server over SSH and runs `deploy.sh` with the commit SHA, which fails unless every container is healthy and `/api/health` answers `ok` on the server. The check does not go through Cloudflare: Bot Fight Mode blocks requests from GitHub's runners, and the free plan allows no exception. Deploys run one at a time and are never cancelled halfway. Each one is listed under the repository's **Environments → staging**.
 
 `deploy.sh` pulls the images, runs the database migrations, starts the new containers and waits up to three minutes for every health check.
 

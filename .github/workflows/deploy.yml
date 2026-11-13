@@ -38,6 +38,9 @@ jobs:
       - name: Deploy over SSH
         # The key can only run the deploy script with one commit SHA (a forced command on
         # the server); it opens no shell. Server address and host key are secrets too.
+        # deploy.sh fails unless every container is healthy and /api/health answers "ok"
+        # on the server. Checking through Cloudflare from here is not possible: Bot Fight
+        # Mode blocks requests from GitHub's runners, and the free plan allows no exception.
         run: |
           [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "Not a full commit SHA: $SHA"; exit 1; }
           install -m 700 -d ~/.ssh
@@ -52,11 +55,3 @@ jobs:
           SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.STAGING_KNOWN_HOSTS }}
           HOST: ${{ secrets.STAGING_HOST }}
-
-      - name: Check the site through Cloudflare
-        run: |
-          for i in 1 2 3 4 5 6; do
-            if curl -fsS --max-time 10 https://staging.underplotsociety.com.br/api/health; then echo; exit 0; fi
-            sleep 10
-          done
-          echo "Health check failed through Cloudflare"; exit 1
