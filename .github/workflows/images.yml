@@ -1,0 +1,104 @@
+name: Images
+
+# Builds the backend and frontend images on every push to main and publishes them to
+# GitHub Container Registry, tagged with the commit SHA and "main". Servers only pull
+# and run them, so a small machine never has to build anything.
+# Pull requests build both architectures without publishing, so a broken image is
+# caught before the merge.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: images-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io/thomastds
+
+jobs:
+  build:
+    name: Build ${{ matrix.image }} (${{ matrix.arch }})
+    # Native runners for each architecture: no emulation, and the image matches what the
+    # server runs (x86 now, Ampere ARM later).
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        image: [backend, frontend]
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        run: echo "$TOKEN" | docker login ghcr.io --username "$ACTOR" --password-stdin
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+
+      - name: Build (and push, outside pull requests)
+        run: |
+          output=--push
+          if [ "$EVENT" = pull_request ]; then output=--output=type=cacheonly; fi
+          docker buildx create --use --name builder
+          docker buildx build "$IMAGE" \
+            --platform "linux/$ARCH" \
+            --label "org.opencontainers.image.source=https://github.com/$REPO" \
+            --label "org.opencontainers.image.revision=$SHA" \
+            --tag "$REGISTRY/underplot-$IMAGE:$SHA-$ARCH" \
+            --provenance=false \
+            "$output"
+        env:
+          EVENT: ${{ github.event_name }}
+          IMAGE: ${{ matrix.image }}
+          ARCH: ${{ matrix.arch }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+
+  publish:
+    name: Publish ${{ matrix.image }}
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        image: [backend, frontend]
+    steps:
+      - name: Log in to GitHub Container Registry
+        run: echo "$TOKEN" | docker login ghcr.io --username "$ACTOR" --password-stdin
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+
+      - name: Combine both architectures under one tag
+        run: |
+          base="$REGISTRY/underplot-$IMAGE"
+          docker buildx imagetools create \
+            --tag "$base:$SHA" \
+            --tag "$base:main" \
+            "$base:$SHA-amd64" "$base:$SHA-arm64"
+          docker buildx imagetools inspect "$base:$SHA"
+        env:
+          IMAGE: ${{ matrix.image }}
+          SHA: ${{ github.sha }}

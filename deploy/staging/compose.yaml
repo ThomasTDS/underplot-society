@@ -1,0 +1,83 @@
+# Staging stack: the same services as the local compose.yaml, but running the images
+# published by the Images workflow instead of building them. Run through deploy.sh.
+# Variables come from /etc/underplot/staging.env (see staging.env.example).
+name: underplot
+
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  restart: unless-stopped
+
+x-backend: &backend
+  <<: *hardening
+  image: ghcr.io/thomastds/underplot-backend:${IMAGE_TAG:?Set IMAGE_TAG}
+  dns_opt:
+    - timeout:1
+    - attempts:1
+  environment:
+    APP_KEY: ${APP_KEY:?Set APP_KEY}
+    APP_URL: ${APP_URL:?Set APP_URL}
+    PHP_CLI_SERVER_WORKERS: "2"
+    DB_CONNECTION: pgsql
+    DB_HOST: db
+    DB_PORT: "5432"
+    DB_DATABASE: underplot
+    DB_USERNAME: underplot
+    DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+
+services:
+  db:
+    <<: *hardening
+    image: postgres:18.6-alpine3.24
+    user: postgres
+    # Sized for a 1 GB server.
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=30"]
+    environment:
+      POSTGRES_DB: underplot
+      POSTGRES_USER: underplot
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+    # No published port: only the backend, on the internal network, reaches it.
+    volumes:
+      - db-data:/var/lib/postgresql
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    <<: *backend
+    command: ["php", "artisan", "migrate", "--force", "--no-interaction"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    <<: *backend
+    ports:
+      - "127.0.0.1:8000:8000"
+    mem_limit: 256m
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  frontend:
+    <<: *hardening
+    image: ghcr.io/thomastds/underplot-frontend:${IMAGE_TAG:?Set IMAGE_TAG}
+    environment:
+      API_BASE_URL: http://backend:8000
+    ports:
+      - "127.0.0.1:3000:3000"
+    mem_limit: 256m
+    depends_on:
+      backend:
+        condition: service_started
+
+volumes:
+  db-data:

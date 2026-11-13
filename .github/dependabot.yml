@@ -59,7 +59,7 @@ updates:
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   - package-ecosystem: docker-compose
-    directories: [/, /deploy/tunnel]
+    directories: [/, /deploy/tunnel, /deploy/staging]
     schedule:
       interval: weekly
     cooldown:

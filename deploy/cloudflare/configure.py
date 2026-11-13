@@ -3,7 +3,8 @@
 Idempotent: every run brings the account and zone to the state below, creating
 what is missing and overwriting what drifted.
 
-  1. Tunnel (remotely managed) whose only route is HOSTNAME -> ORIGIN; anything else gets 404.
+  1. Tunnel (remotely managed) routing HOSTNAME/api/* -> API_ORIGIN (optional) and
+     HOSTNAME -> ORIGIN; anything else gets 404.
   2. Proxied DNS CNAME HOSTNAME -> <tunnel id>.cfargotunnel.com.
   3. Zone TLS and HTTPS settings (full strict, TLS 1.2+, HTTPS only, HSTS).
   4. Bot Fight Mode and JavaScript detections.
@@ -87,7 +88,7 @@ class Cloudflare:
         return payload["result"]
 
 
-def ensure_tunnel(cf, account, name, hostname, origin):
+def ensure_tunnel(cf, account, name, hostname, origin, api_origin):
     found = cf.call("GET", f"/accounts/{account}/cfd_tunnel?name={name}&is_deleted=false")
     if found:
         tunnel_id = found[0]["id"]
@@ -96,10 +97,12 @@ def ensure_tunnel(cf, account, name, hostname, origin):
         tunnel_id = cf.call("POST", f"/accounts/{account}/cfd_tunnel",
                             {"name": name, "config_src": "cloudflare"})["id"]
         log(f"tunnel {name}: created")
-    cf.call("PUT", f"/accounts/{account}/cfd_tunnel/{tunnel_id}/configurations", {"config": {"ingress": [
-        {"hostname": hostname, "service": origin},
-        {"service": "http_status:404"},
-    ]}})
+    ingress = []
+    if api_origin:
+        ingress.append({"hostname": hostname, "path": "^/api/", "service": api_origin})
+        log(f"tunnel {name}: {hostname}/api/* -> {api_origin}")
+    ingress += [{"hostname": hostname, "service": origin}, {"service": "http_status:404"}]
+    cf.call("PUT", f"/accounts/{account}/cfd_tunnel/{tunnel_id}/configurations", {"config": {"ingress": ingress}})
     log(f"tunnel {name}: {hostname} -> {origin}, everything else 404")
     return tunnel_id
 
@@ -134,7 +137,8 @@ def main():
     parser.add_argument("--zone", required=True)
     parser.add_argument("--hostname", required=True)
     parser.add_argument("--tunnel", required=True, help="tunnel name")
-    parser.add_argument("--origin", default="http://127.0.0.1:3000")
+    parser.add_argument("--origin", default="http://127.0.0.1:3000", help="the site")
+    parser.add_argument("--api-origin", help="the API, served under /api/ (omit to keep it private)")
     parser.add_argument("--print-tunnel-token", action="store_true")
     args = parser.parse_args()
 
@@ -149,7 +153,7 @@ def main():
         raise SystemExit(f"zone {args.zone} not found for this token")
     zone_id = zones[0]["id"]
 
-    tunnel_id = ensure_tunnel(cf, account, args.tunnel, args.hostname, args.origin)
+    tunnel_id = ensure_tunnel(cf, account, args.tunnel, args.hostname, args.origin, args.api_origin)
     ensure_dns(cf, zone_id, args.hostname, tunnel_id, args.tunnel)
     ensure_zone_security(cf, zone_id)
 
