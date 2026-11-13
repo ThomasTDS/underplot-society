@@ -1,12 +1,15 @@
 name: Images
 
-# Builds the backend and frontend images on every push to main and publishes them to
+# After CI passes on main, builds the backend and frontend images and publishes them to
 # GitHub Container Registry, tagged with the commit SHA and "main". Servers only pull
-# and run them, so a small machine never has to build anything.
+# and run them, so a small machine never has to build anything. A successful run
+# triggers the Deploy workflow.
 # Pull requests build both architectures without publishing, so a broken image is
 # caught before the merge.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   pull_request:
   workflow_dispatch:
@@ -15,17 +18,26 @@ permissions:
   contents: read
 
 concurrency:
-  group: images-${{ github.ref }}
+  group: images-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
   cancel-in-progress: false
 
 env:
   REGISTRY: ghcr.io/thomastds
+  # The commit CI tested (workflow_run), or the one this run was started on.
+  SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
 
 jobs:
   build:
     name: Build ${{ matrix.image }} (${{ matrix.arch }})
     # Native runners for each architecture: no emulation, and the image matches what the
     # server runs (x86 now, Ampere ARM later).
+    # Only a green CI run from a push to main in this repository, never a fork's branch
+    # that happens to be called main.
+    if: >-
+      github.event_name != 'workflow_run' || (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     permissions:
@@ -44,6 +56,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ env.SHA }}
           persist-credentials: false
 
       - name: Log in to GitHub Container Registry
@@ -70,7 +83,6 @@ jobs:
           IMAGE: ${{ matrix.image }}
           ARCH: ${{ matrix.arch }}
           REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
 
   publish:
     name: Publish ${{ matrix.image }}
@@ -101,4 +113,3 @@ jobs:
           docker buildx imagetools inspect "$base:$SHA"
         env:
           IMAGE: ${{ matrix.image }}
-          SHA: ${{ github.sha }}

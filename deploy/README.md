@@ -15,7 +15,7 @@ The server opens **no** HTTP or HTTPS port. `cloudflared` connects out to Cloudf
 
 | Path | What it does |
 |---|---|
-| [`server/harden.sh`](server/harden.sh) | Updates the system, enables automatic security updates (with reboot at 06:30), adds 2 GB of swap, and restricts SSH to key login for one user, no root |
+| [`server/harden.sh`](server/harden.sh) | Updates the system, enables automatic security updates (with reboot at 06:30), adds 2 GB of swap, and restricts SSH to key login for the admin user and the restricted `deploy` user, no root |
 | [`server/install-docker.sh`](server/install-docker.sh) | Installs Docker Engine and Compose from Docker's repository, with [`daemon.json`](server/daemon.json): rotated logs, containers survive daemon restarts, no privilege escalation |
 | [`tunnel/compose.yaml`](tunnel/compose.yaml) | The `cloudflared` container: read-only, no Linux capabilities, 128 MB limit, image pinned by digest, health check |
 | [`staging/compose.yaml`](staging/compose.yaml) | The site: PostgreSQL, migrations, API and frontend, from the published images, with memory limits sized for a 1 GB server. The database has no published port. |
@@ -75,18 +75,28 @@ Needs: an Ubuntu 24.04 server reachable by SSH with a key, a Cloudflare zone, an
 
 ## Deploying
 
-Every push to `main` runs the [Images workflow](../.github/workflows/images.yml): it builds the backend and frontend images on native x86 and ARM runners and publishes them to GitHub Container Registry as `ghcr.io/thomastds/underplot-backend` and `underplot-frontend`, tagged with the commit SHA and `main`. The server never builds anything.
+When CI passes on `main`, the [Images workflow](../.github/workflows/images.yml) builds the backend and frontend images on native x86 and ARM runners and publishes them to GitHub Container Registry as `ghcr.io/thomastds/underplot-backend` and `underplot-frontend`, tagged with the commit SHA and `main`. The server never builds anything.
 
-To deploy a commit, on the server:
+A successful Images run triggers the [Deploy workflow](../.github/workflows/deploy.yml), so every merge reaches staging on its own: **CI → Images → Deploy**. Deploy connects to the server over SSH, runs `deploy.sh` with the commit SHA, then checks `/api/health` through Cloudflare. Deploys run one at a time and are never cancelled halfway. Each one is listed under the repository's **Environments → staging**.
 
-```sh
-cd /opt/underplot/staging
-sudo bash deploy.sh <commit SHA>
-```
+`deploy.sh` pulls the images, runs the database migrations, starts the new containers and waits up to three minutes for every health check.
 
-The script pulls the images, runs the database migrations, starts the new containers and waits up to three minutes for every health check. It ends by printing the services and the API health check.
+### How CI reaches the server
 
-**Rolling back:** run it again with the previous SHA. The script prints it at the start and keeps the current one in `/opt/underplot/staging/deployed-tag`. Migrations are not reversed automatically, so a migration that breaks an older version must be rolled back with `php artisan migrate:rollback` in the backend container first.
+The workflow logs in as a dedicated `deploy` user whose key is restricted on the server:
+
+- `authorized_keys` has `restrict,command="/usr/local/bin/underplot-deploy-gate"`, so the key opens no shell, no forwarding and no other command, whatever the client asks for;
+- the gate ([`staging/deploy-gate.sh`](staging/deploy-gate.sh)) accepts only a 40-character commit SHA and runs `sudo /opt/underplot/staging/deploy.sh <sha>`;
+- `sudoers` allows `deploy` to run that one root-owned script and nothing else;
+- the `staging` environment in GitHub accepts deployments from `main` only, and holds the key, the server address and its SSH host key as secrets.
+
+Setting it up (once per server, as root): create the user with a locked password, install the gate as `/usr/local/bin/underplot-deploy-gate`, add the key with the options above, add `deploy ALL=(root) NOPASSWD: /opt/underplot/staging/deploy.sh` to `/etc/sudoers.d/underplot-deploy`, and add `deploy` to `AllowUsers` in the SSH configuration.
+
+### Rolling back
+
+Run the Deploy workflow by hand (**Actions → Deploy → Run workflow**) with the previous commit SHA, from the list of deployments or from `/opt/underplot/staging/deployed-tag`, which `deploy.sh` prints as `previous` at the start. By hand on the server, `sudo bash deploy.sh <sha>` does the same.
+
+Migrations are not reversed automatically. If a migration breaks an older version, run `php artisan migrate:rollback` in the backend container before deploying the older SHA.
 
 ## Backups
 

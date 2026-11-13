@@ -43,7 +43,7 @@ PubkeyAuthentication yes
 AuthenticationMethods publickey
 X11Forwarding no
 MaxAuthTries 3
-AllowUsers ubuntu
+AllowUsers ubuntu deploy
 EOF
 sshd -t
 systemctl reload ssh
