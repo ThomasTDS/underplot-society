@@ -1,0 +1,60 @@
+name: Deploy
+
+# Deploys to staging after the Images workflow publishes a commit that passed CI on main.
+# Run it by hand with an older commit SHA to roll back.
+on:
+  workflow_run:
+    workflows: [Images]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full commit SHA whose images to deploy (rollback or redeploy)
+        required: true
+
+permissions:
+  contents: read
+
+# One deploy at a time, and never cancel one halfway.
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to staging
+    if: >-
+      github.event_name == 'workflow_dispatch' || (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'workflow_run' &&
+        github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment:
+      name: staging
+      url: https://staging.underplotsociety.com.br
+    steps:
+      - name: Deploy over SSH
+        # The key can only run the deploy script with one commit SHA (a forced command on
+        # the server); it opens no shell. Server address and host key are secrets too.
+        run: |
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "Not a full commit SHA: $SHA"; exit 1; }
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=20 "deploy@$HOST" "$SHA"
+        env:
+          SHA: ${{ inputs.sha || github.event.workflow_run.head_sha }}
+          SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.STAGING_KNOWN_HOSTS }}
+          HOST: ${{ secrets.STAGING_HOST }}
+
+      - name: Check the site through Cloudflare
+        run: |
+          for i in 1 2 3 4 5 6; do
+            if curl -fsS --max-time 10 https://staging.underplotsociety.com.br/api/health; then echo; exit 0; fi
+            sleep 10
+          done
+          echo "Health check failed through Cloudflare"; exit 1
