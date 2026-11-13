@@ -1,0 +1,28 @@
+# Cloudflare Tunnel connector. The server's only route in from the web: it opens
+# outbound connections to Cloudflare, so no HTTP or HTTPS port is open to the internet.
+# Routing (hostname -> local port) lives in Cloudflare and is set by deploy/cloudflare/configure.py.
+# Runs as its own Compose project, so redeploying the site never drops the tunnel.
+name: underplot-tunnel
+
+services:
+  cloudflared:
+    # Pinned by digest; versions are adopted at least 14 days after release.
+    image: cloudflare/cloudflared:2026.10.7@sha256:4955524aeaa379e154023d5a027c250f7b35041a2e7e950cf13f144bc9b9c5ba
+    command: ["tunnel", "--no-autoupdate", "--metrics", "127.0.0.1:20241", "run"]
+    # Host network so it can reach the site on 127.0.0.1, where Compose publishes it.
+    network_mode: host
+    # TUNNEL_TOKEN=... (root-only file on the server, never committed)
+    env_file: /etc/underplot/tunnel.env
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 128m
+    healthcheck:
+      test: ["CMD", "cloudflared", "tunnel", "--metrics", "127.0.0.1:20241", "ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped

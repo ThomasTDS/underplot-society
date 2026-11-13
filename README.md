@@ -21,6 +21,7 @@ This repository holds the website. It is also a portfolio and a study ground for
 | `backend/` | Laravel API and admin panel (PostgreSQL) |
 | `frontend/` | Next.js (TypeScript) public site |
 | `e2e/` | End-to-end browser tests (Playwright) against the running stack |
+| `deploy/` | Server setup, Cloudflare Tunnel and Cloudflare configuration for staging ([how to rebuild](deploy/README.md)) |
 | `docs/` | Architecture Decision Records and project documentation |
 
 ## Architecture decisions
