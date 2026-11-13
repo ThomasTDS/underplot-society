@@ -20,6 +20,7 @@ The server opens **no** HTTP or HTTPS port. `cloudflared` connects out to Cloudf
 | [`tunnel/compose.yaml`](tunnel/compose.yaml) | The `cloudflared` container: read-only, no Linux capabilities, 128 MB limit, image pinned by digest, health check |
 | [`staging/compose.yaml`](staging/compose.yaml) | The site: PostgreSQL, migrations, API and frontend, from the published images, with memory limits sized for a 1 GB server. The database has no published port. |
 | [`staging/deploy.sh`](staging/deploy.sh) | Deploys one image tag: pulls, migrates, restarts and waits until every service is healthy |
+| [`staging/backup.sh`](staging/backup.sh) | Daily encrypted database backup to a private Git repository, run by [`underplot-backup.timer`](staging/underplot-backup.timer) |
 | [`cloudflare/configure.py`](cloudflare/configure.py) | Creates or updates the tunnel and its route, the DNS record, TLS settings, bot protection and WAF rules, through the Cloudflare API |
 
 ## Cloudflare settings
@@ -86,6 +87,33 @@ sudo bash deploy.sh <commit SHA>
 The script pulls the images, runs the database migrations, starts the new containers and waits up to three minutes for every health check. It ends by printing the services and the API health check.
 
 **Rolling back:** run it again with the previous SHA. The script prints it at the start and keeps the current one in `/opt/underplot/staging/deployed-tag`. Migrations are not reversed automatically, so a migration that breaks an older version must be rolled back with `php artisan migrate:rollback` in the backend container first.
+
+## Backups
+
+Every day at about 05:30 (UTC), `underplot-backup.timer` dumps the database with `pg_dump`, encrypts it with [age](https://age-encryption.org/) and pushes it to a private GitHub repository, so a lost server or a lost cloud account does not lose the data. The last 30 days stay in the repository tree; older dumps remain in its history.
+
+The server holds only the **public** key, so neither the server nor the repository can read a backup. The private key is kept offline by the maintainer; without it the backups cannot be restored.
+
+**Setting up** (once per server, as root):
+
+1. Install `age` and `git`, and put in `/etc/underplot/`:
+   - `backup-recipient.txt`: the age public key;
+   - `backup_deploy_key`: an SSH key with write access to the backup repository only (a GitHub deploy key);
+   - `github_known_hosts`: GitHub's SSH host key, checked against the [published fingerprints](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints);
+   - `backup.env`: `BACKUP_REMOTE=git@github.com:<owner>/<repository>.git`.
+2. Copy `backup.sh` to `/opt/underplot/staging/` and the two `underplot-backup.*` units to `/etc/systemd/system/`, then:
+   ```sh
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now underplot-backup.timer
+   sudo systemctl start underplot-backup.service   # first backup now
+   ```
+
+**Restoring** (on a machine with the private key and the staging stack running):
+
+```sh
+age --decrypt --identity backup-age-key.txt staging/<date>.dump.age > underplot.dump
+docker exec -i underplot-db-1 pg_restore --username=underplot --dbname=underplot --clean --if-exists < underplot.dump
+```
 
 ## Checking it
 
