@@ -36,7 +36,7 @@ ENV APP_ENV=production \
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=10s --timeout=6s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=10s --timeout=6s --start-period=30s --retries=3 \
     CMD php -r 'exit(@file_get_contents("http://127.0.0.1:8000/api/health") === false ? 1 : 0);'
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000", "--no-reload"]
+CMD ["sh", "docker/start.sh"]
