@@ -23,6 +23,10 @@ x-backend: &backend
     # The backend is reachable only through the tunnel and from the frontend, so the
     # visitor address Cloudflare sends can be trusted (rate limits per visitor).
     CLIENT_IP_HEADER: CF-Connecting-IP
+    # The admin panel answers only on its own host, and its session cookie travels
+    # over HTTPS only.
+    ADMIN_DOMAIN: staging-admin.underplotsociety.com.br
+    SESSION_SECURE_COOKIE: "true"
     DB_CONNECTION: pgsql
     DB_HOST: db
     DB_PORT: "5432"

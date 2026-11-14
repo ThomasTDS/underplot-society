@@ -2,11 +2,11 @@ FROM composer:2.11.2 AS composer
 
 FROM php:8.4.27-cli-alpine3.24
 
-# PostgreSQL driver. Build dependencies are removed after compiling; only the
-# runtime client library stays.
-RUN apk add --no-cache libpq \
-    && apk add --no-cache --virtual .build-deps postgresql-dev \
-    && docker-php-ext-install pdo_pgsql \
+# PostgreSQL driver, plus intl and zip for the admin panel (Filament). Build
+# dependencies are removed after compiling; only the runtime libraries stay.
+RUN apk add --no-cache libpq icu-libs libzip \
+    && apk add --no-cache --virtual .build-deps postgresql-dev icu-dev libzip-dev \
+    && docker-php-ext-install pdo_pgsql intl zip \
     && apk del .build-deps
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
@@ -22,6 +22,7 @@ RUN composer install --no-dev --no-interaction --no-progress --no-scripts --no-a
 
 COPY . .
 RUN composer dump-autoload --no-dev --optimize --classmap-authoritative \
+    && php artisan filament:assets \
     && rm /usr/bin/composer \
     && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache

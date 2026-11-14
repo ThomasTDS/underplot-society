@@ -1,11 +1,12 @@
-"""Configure Cloudflare for one hostname served through a Cloudflare Tunnel.
+"""Configure Cloudflare for the hostnames served through a Cloudflare Tunnel.
 
 Idempotent: every run brings the account and zone to the state below, creating
 what is missing and overwriting what drifted.
 
-  1. Tunnel (remotely managed) routing HOSTNAME/api/* -> API_ORIGIN (optional) and
-     HOSTNAME -> ORIGIN; anything else gets 404.
-  2. Proxied DNS CNAME HOSTNAME -> <tunnel id>.cfargotunnel.com.
+  1. Tunnel (remotely managed) routing ADMIN_HOSTNAME (optional, all paths) and
+     HOSTNAME/api/* (optional) -> API_ORIGIN, and HOSTNAME -> ORIGIN; anything
+     else gets 404.
+  2. Proxied DNS CNAME for each hostname -> <tunnel id>.cfargotunnel.com.
   3. Zone TLS and HTTPS settings (full strict, TLS 1.2+, HTTPS only, HSTS).
   4. Bot Fight Mode and JavaScript detections.
   5. WAF custom rules: block common probes for secrets and admin tools.
@@ -88,7 +89,7 @@ class Cloudflare:
         return payload["result"]
 
 
-def ensure_tunnel(cf, account, name, hostname, origin, api_origin):
+def ensure_tunnel(cf, account, name, hostname, origin, api_origin, admin_hostname):
     found = cf.call("GET", f"/accounts/{account}/cfd_tunnel?name={name}&is_deleted=false")
     if found:
         tunnel_id = found[0]["id"]
@@ -98,6 +99,11 @@ def ensure_tunnel(cf, account, name, hostname, origin, api_origin):
                             {"name": name, "config_src": "cloudflare"})["id"]
         log(f"tunnel {name}: created")
     ingress = []
+    if admin_hostname:
+        # The admin panel lives in the backend, under several paths (/admin, Livewire,
+        # Filament assets), so its host goes there whole.
+        ingress.append({"hostname": admin_hostname, "service": api_origin})
+        log(f"tunnel {name}: {admin_hostname} -> {api_origin}")
     if api_origin:
         ingress.append({"hostname": hostname, "path": "^/api/", "service": api_origin})
         log(f"tunnel {name}: {hostname}/api/* -> {api_origin}")
@@ -139,8 +145,11 @@ def main():
     parser.add_argument("--tunnel", required=True, help="tunnel name")
     parser.add_argument("--origin", default="http://127.0.0.1:3000", help="the site")
     parser.add_argument("--api-origin", help="the API, served under /api/ (omit to keep it private)")
+    parser.add_argument("--admin-hostname", help="host for the admin panel, served whole by --api-origin")
     parser.add_argument("--print-tunnel-token", action="store_true")
     args = parser.parse_args()
+    if args.admin_hostname and not args.api_origin:
+        parser.error("--admin-hostname needs --api-origin")
 
     token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
     account = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
@@ -153,8 +162,10 @@ def main():
         raise SystemExit(f"zone {args.zone} not found for this token")
     zone_id = zones[0]["id"]
 
-    tunnel_id = ensure_tunnel(cf, account, args.tunnel, args.hostname, args.origin, args.api_origin)
-    ensure_dns(cf, zone_id, args.hostname, tunnel_id, args.tunnel)
+    tunnel_id = ensure_tunnel(cf, account, args.tunnel, args.hostname, args.origin, args.api_origin,
+                              args.admin_hostname)
+    for hostname in filter(None, [args.hostname, args.admin_hostname]):
+        ensure_dns(cf, zone_id, hostname, tunnel_id, args.tunnel)
     ensure_zone_security(cf, zone_id)
 
     if args.print_tunnel_token:

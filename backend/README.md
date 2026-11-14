@@ -101,6 +101,21 @@ A breaking change goes into a new version (`/api/v2`) while `/api/v1` keeps work
 
 With `APP_ENV=local`, the documentation can also be browsed at `/docs/api`.
 
+## Admin panel
+
+Articles and areas are written in a [Filament](https://filamentphp.com) panel at `/admin`. On staging it answers only on its own host, `staging-admin.underplotsociety.com.br` (`ADMIN_DOMAIN`); elsewhere its routes do not exist. There is no sign-up and no password reset by email. Create the administrator with:
+
+```sh
+php artisan make:filament-user
+```
+
+- **Articles:** the three languages are edited side by side, and each language has its own **Preview**. The preview renders the Markdown with raw HTML escaped and unsafe links (`javascript:`, `data:`) removed.
+- **Publishing:** in the list, **Publish** puts all three languages on the site now, or at a chosen date (scheduling). **Unpublish** takes them all back to draft. Each language can also be set to draft or published in the form.
+- **Rules:** publication rules live in the models, not in the panel. An article missing a language cannot be published. A translation published without a date gets the current time. Publishing again keeps the original publication date.
+- **Areas:** an area that still has articles cannot be deleted.
+
+The panel's CSS, JavaScript and fonts are published to `public/` by `php artisan filament:assets`, which runs after `composer install` and during the image build. They are not committed.
+
 ## Database timeouts
 
 | Variable | Default | Effect |

@@ -13,6 +13,10 @@
 /auth.json
 /node_modules
 /public/build
+# Published by `php artisan filament:assets` (composer hook and image build).
+/public/css/filament
+/public/fonts/filament
+/public/js/filament
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage

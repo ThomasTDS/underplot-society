@@ -7,7 +7,8 @@ visitor --HTTPS--> Cloudflare (TLS, WAF, bot protection)
                         |
                         |  Cloudflare Tunnel (outbound from the server)
                         v
-          server: cloudflared --> 127.0.0.1:8000 (API, /api/* only)
+          server: cloudflared --> 127.0.0.1:8000 (API: /api/* on the site's host;
+                                              admin panel: its own host, whole)
                               --> 127.0.0.1:3000 (site, everything else)
 ```
 
@@ -21,7 +22,7 @@ The server opens **no** HTTP or HTTPS port. `cloudflared` connects out to Cloudf
 | [`staging/compose.yaml`](staging/compose.yaml) | The site: PostgreSQL, migrations, API and frontend, from the published images, with memory limits sized for a 1 GB server. The database has no published port. |
 | [`staging/deploy.sh`](staging/deploy.sh) | Deploys one image tag: pulls, migrates, restarts and waits until every service is healthy |
 | [`staging/backup.sh`](staging/backup.sh) | Daily encrypted database backup to a private Git repository, run by [`underplot-backup.timer`](staging/underplot-backup.timer) |
-| [`cloudflare/configure.py`](cloudflare/configure.py) | Creates or updates the tunnel and its route, the DNS record, TLS settings, bot protection and WAF rules, through the Cloudflare API |
+| [`cloudflare/configure.py`](cloudflare/configure.py) | Creates or updates the tunnel and its routes, the DNS records, TLS settings, bot protection and WAF rules, through the Cloudflare API |
 
 ## Cloudflare settings
 
@@ -29,8 +30,8 @@ Applied by `configure.py` on every run. The script overwrites drift, so it is th
 
 | Area | Setting |
 |---|---|
-| Tunnel route | Only the staging hostname: `/api/*` to the API on `127.0.0.1:8000`, everything else to the site on `127.0.0.1:3000`. Any other hostname gets 404. |
-| DNS | Proxied CNAME to the tunnel. The server's IP address is never published. |
+| Tunnel route | `staging.underplotsociety.com.br`: `/api/*` to the API on `127.0.0.1:8000`, everything else to the site on `127.0.0.1:3000`. `staging-admin.underplotsociety.com.br`: everything to the backend, which serves the admin panel at `/admin` (the panel needs several paths: its pages, Livewire and its assets). Any other hostname gets 404. |
+| DNS | Proxied CNAMEs to the tunnel. The server's IP address is never published. The admin host is `staging-admin`, not `admin.staging`, because Cloudflare's free certificate covers one level of subdomain only. |
 | TLS | Full (strict), minimum TLS 1.2, TLS 1.3 on, HTTP redirected to HTTPS, HSTS for 180 days with `nosniff` |
 | Bots | Bot Fight Mode and JavaScript detections |
 | WAF | Cloudflare Free Managed Ruleset (on by default), plus a custom rule that blocks probes for `/.env`, `/.git`, WordPress and phpMyAdmin paths and similar |
@@ -55,6 +56,7 @@ Needs: an Ubuntu 24.04 server reachable by SSH with a key, a Cloudflare zone, an
      --hostname staging.underplotsociety.com.br \
      --tunnel underplot-staging \
      --api-origin http://127.0.0.1:8000 \
+     --admin-hostname staging-admin.underplotsociety.com.br \
      --print-tunnel-token \
      | ssh <server> "sudo install -d -m 700 /etc/underplot && sudo tee /etc/underplot/tunnel.env >/dev/null && sudo chmod 600 /etc/underplot/tunnel.env"
    ```
@@ -72,6 +74,12 @@ Needs: an Ubuntu 24.04 server reachable by SSH with a key, a Cloudflare zone, an
    ```
    Keep a copy of `APP_KEY` and `DB_PASSWORD` outside the server; restoring a backup needs them.
 6. **Deploy.** Copy `deploy/staging/compose.yaml` and `deploy.sh` to `/opt/underplot/staging/`, then follow the next section.
+7. **Administrator.** The panel has no sign-up. After the first deploy, create the account on the server; the command asks for the name, email and password:
+   ```sh
+   cd /opt/underplot/staging
+   sudo IMAGE_TAG="$(cat deployed-tag)" docker compose --env-file /etc/underplot/staging.env exec backend php artisan make:filament-user
+   ```
+   Restoring a backup brings the account back with the database.
 
 ## Deploying
 
@@ -132,6 +140,8 @@ curl -I http://staging.underplotsociety.com.br/        # 301 to HTTPS
 curl -I https://staging.underplotsociety.com.br/       # the site, through Cloudflare
 curl https://staging.underplotsociety.com.br/api/health # {"status":"ok"}
 curl -I https://staging.underplotsociety.com.br/.env   # 403, blocked by the WAF
+curl -I https://staging-admin.underplotsociety.com.br/admin  # 302 to the panel's login
+curl -I https://staging.underplotsociety.com.br/admin        # 404: the panel is not on the site's host
 curl -m 5 http://<server-ip>/                          # fails: no port open
 ```
 
