@@ -66,6 +66,19 @@ Responses do not include `X-Powered-By` or `Server` headers. The web server in f
 
 Debug mode can only be enabled when `APP_ENV=local`. In any other environment `APP_DEBUG` is ignored, so a misconfigured server cannot expose stack traces or configuration. `.env.example` ships with `APP_DEBUG=false`.
 
+## Content model
+
+Every article is written in English, Brazilian Portuguese and Spanish (`App\Enums\Locale`: `en`, `pt-br`, `es`). What the three versions share lives in one table, and each language gets its own row in a `*_translations` table.
+
+| Table | Holds | Rules enforced by the database |
+|---|---|---|
+| `articles` | Area and cover image | An area with articles cannot be deleted; deleting the cover image only clears it |
+| `article_translations` | Slug, title, summary, Markdown body, status (`draft` or `published`), `published_at`, SEO title and description | One per language per article; slug unique within a language; language and status limited to the known values |
+| `areas` / `area_translations` | Subjects used to filter articles, with a translated name and slug | One per language per area; slug unique within a language |
+| `media` / `media_translations` | Uploaded files and their alternative text | One alternative text per language per file |
+
+A published translation with a future `published_at` is scheduled: the public API hides it until then. Deleting an article deletes its translations.
+
 ## Quality checks
 
 ```sh
@@ -74,5 +87,7 @@ vendor/bin/pint --test  # code style
 vendor/bin/phpstan analyse  # static analysis (Larastan, level 8)
 composer audit          # known vulnerabilities in dependencies
 ```
+
+In CI, the suite runs twice: on SQLite, and on PostgreSQL, the database the servers use. To run it on PostgreSQL locally, set `DB_CONNECTION=pgsql`, `DB_DATABASE` and the other `DB_*` variables in the environment; they take precedence over `phpunit.xml`. Use a throwaway database, because the tests drop and recreate every table.
 
 The statement timeout test runs against the PostgreSQL database from `.env` and is skipped when it is not reachable. Set `DB_TEST_PGSQL_DATABASE` if the database name is not `underplot`.

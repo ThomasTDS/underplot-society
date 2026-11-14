@@ -70,6 +70,15 @@ jobs:
       - name: Tests
         run: php artisan test
 
+      # Same suite on the database the servers run. SQLite is faster but lets through
+      # things PostgreSQL refuses (and the other way round).
+      - name: Tests (PostgreSQL)
+        run: php artisan test
+        env:
+          DB_CONNECTION: pgsql
+          DB_DATABASE: underplot
+          DB_URL: ""
+
   frontend:
     name: Frontend
     runs-on: ubuntu-24.04
