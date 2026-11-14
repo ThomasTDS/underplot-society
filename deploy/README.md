@@ -74,10 +74,10 @@ Needs: an Ubuntu 24.04 server reachable by SSH with a key, a Cloudflare zone, an
    ```
    Keep a copy of `APP_KEY` and `DB_PASSWORD` outside the server; restoring a backup needs them.
 6. **Deploy.** Copy `deploy/staging/compose.yaml` and `deploy.sh` to `/opt/underplot/staging/`, then follow the next section.
-7. **Administrator.** The panel has no sign-up. After the first deploy, create the account on the server; the command asks for the name, email and password:
+7. **Administrator.** The panel has no sign-up. After the first deploy, create the account on the server; the command asks for the name, email and password (at least 12 characters), and the first sign-in sets up two-factor authentication:
    ```sh
    cd /opt/underplot/staging
-   sudo IMAGE_TAG="$(cat deployed-tag)" docker compose --env-file /etc/underplot/staging.env exec backend php artisan make:filament-user
+   sudo IMAGE_TAG="$(cat deployed-tag)" docker compose --env-file /etc/underplot/staging.env exec backend php artisan admin:create
    ```
    Restoring a backup brings the account back with the database.
 

@@ -103,11 +103,22 @@ With `APP_ENV=local`, the documentation can also be browsed at `/docs/api`.
 
 ## Admin panel
 
-Articles and areas are written in a [Filament](https://filamentphp.com) panel at `/admin`. On staging it answers only on its own host, `staging-admin.underplotsociety.com.br` (`ADMIN_DOMAIN`); elsewhere its routes do not exist. There is no sign-up and no password reset by email. Create the administrator with:
+Articles and areas are written in a [Filament](https://filamentphp.com) panel at `/admin`. On staging it answers only on its own host, `staging-admin.underplotsociety.com.br` (`ADMIN_DOMAIN`); elsewhere its routes do not exist. There is no sign-up and no password reset by email. Create the administrator with the command below. It asks for the name, email and password, and refuses passwords shorter than 12 characters (`make:filament-user` would accept any).
 
 ```sh
-php artisan make:filament-user
+php artisan admin:create
 ```
+
+### Signing in
+
+| Protection | How |
+|---|---|
+| Two-factor authentication | Required, with an authenticator app (TOTP). The first sign-in leads to the set-up page, which shows the QR code and the recovery codes; nothing else in the panel opens until it is done. The secret and the recovery codes are stored encrypted with `APP_KEY`. Recovery codes and two-factor settings are under **Profile**. |
+| Failed attempts | Filament limits each address to 5 sign-in attempts a minute. On top of that, each account is locked for 15 minutes after 10 failures (wrong password or wrong code), wherever they come from. The lock answers the same way whether or not the account exists. |
+| Sessions | Expire after 60 idle minutes and when the browser closes (`SESSION_LIFETIME`, `SESSION_EXPIRE_ON_CLOSE`). There is no "remember me". |
+| Password | At least 12 characters, hashed with bcrypt. Changed under **Profile**, which asks for the current password. |
+
+If the authenticator app and the recovery codes are both lost, clear the secret on the server (`app_authentication_secret` and `app_authentication_recovery_codes` set to null in the `users` table); the next sign-in sets it up again.
 
 - **Articles:** the three languages are edited side by side, and each language has its own **Preview**. The preview renders the Markdown with raw HTML escaped and unsafe links (`javascript:`, `data:`) removed.
 - **Publishing:** in the list, **Publish** puts all three languages on the site now, or at a chosen date (scheduling). **Unpublish** takes them all back to draft. Each language can also be set to draft or published in the form.

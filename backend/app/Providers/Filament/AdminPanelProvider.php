@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\Login;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -28,7 +30,21 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            // Login only (no sign-up, no password reset by email), with a lock per
+            // account on top of Filament's limit per address.
+            ->login(Login::class)
+            // Two-factor authentication with an authenticator app is required: after
+            // the password, an account without it must set it up before going further.
+            ->multiFactorAuthentication(
+                [
+                    AppAuthentication::make()
+                        ->brandName('Underplot Society')
+                        ->recoverable(),
+                ],
+                isRequired: true,
+            )
+            // Change the password and manage two-factor authentication.
+            ->profile(isSimple: false)
             // Moving between pages swaps the content instead of reloading the whole
             // page, which is what makes the panel feel slow on a small server.
             ->spa()

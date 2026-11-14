@@ -31,7 +31,7 @@ class AdminAccessTest extends TestCase
     #[DataProvider('panelPages')]
     public function test_the_administrator_can_open_the_panel(string $path): void
     {
-        $this->actingAs(User::factory()->create())->get($path)->assertOk();
+        $this->actingAs(User::factory()->withTwoFactor()->create())->get($path)->assertOk();
     }
 
     public function test_the_login_page_is_served(): void
