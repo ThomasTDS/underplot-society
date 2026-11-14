@@ -7,31 +7,39 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
+/**
+ * Every migration can be reversed: rolling all of them back leaves nothing behind,
+ * and running them again rebuilds the schema.
+ */
 class ContentMigrationsTest extends TestCase
 {
     use DatabaseMigrations;
 
     private const TABLES = [
-        'media', 'media_translations', 'areas', 'area_translations', 'articles', 'article_translations',
+        'users', 'media', 'media_translations', 'areas', 'area_translations', 'articles', 'article_translations',
     ];
 
-    public function test_the_content_migrations_can_be_rolled_back_and_run_again(): void
+    public function test_every_migration_can_be_rolled_back_and_run_again(): void
     {
-        foreach (self::TABLES as $table) {
-            $this->assertTrue(Schema::hasTable($table), "$table was not created.");
-        }
+        $this->assertSchemaComplete();
 
-        $this->assertSame(0, Artisan::call('migrate:rollback', ['--step' => 3]));
+        $this->assertSame(0, Artisan::call('migrate:reset'));
 
         foreach (self::TABLES as $table) {
             $this->assertFalse(Schema::hasTable($table), "$table survived the rollback.");
         }
-        $this->assertTrue(Schema::hasTable('users'), 'The rollback went past the content migrations.');
 
         $this->assertSame(0, Artisan::call('migrate'));
 
+        $this->assertSchemaComplete();
+    }
+
+    private function assertSchemaComplete(): void
+    {
         foreach (self::TABLES as $table) {
-            $this->assertTrue(Schema::hasTable($table), "$table was not recreated.");
+            $this->assertTrue(Schema::hasTable($table), "$table is missing.");
         }
+
+        $this->assertTrue(Schema::hasColumns('users', ['app_authentication_secret', 'app_authentication_recovery_codes']));
     }
 }

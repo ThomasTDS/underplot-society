@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +30,10 @@ class AppServiceProvider extends ServiceProvider
         if (str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');
         }
+
+        // Password policy for the administrator (admin:create and the profile page).
+        // Length over composition rules, as current guidance recommends.
+        Password::defaults(fn () => Password::min(12)->max(128));
 
         // Content API: a limit per visitor, and a separate, higher one shared by the
         // site's own server. Over the limit, the answer is a 429 with Retry-After.

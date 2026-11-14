@@ -36,7 +36,7 @@ class ArticleAuthoringTest extends TestCase
         parent::setUp();
         $this->freezeSecond();
         $this->undoRepeaterFake = Repeater::fake();
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->withTwoFactor()->create());
 
         $this->area = AreaTranslation::factory()->create(['locale' => Locale::En, 'name' => 'Design', 'slug' => 'design'])->area;
     }
