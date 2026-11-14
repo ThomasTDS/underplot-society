@@ -66,6 +66,28 @@ Only translations with status `published` and a `published_at` that has arrived 
 | Invalid query parameter (out of range, not a number, unknown area) | `422` with `message` and `errors` per field |
 | Any method other than `GET` or `HEAD` | `405` |
 
+## OpenAPI document
+
+[`openapi.json`](openapi.json) describes the API. [Scramble](https://scramble.dedoc.co) generates it from the code: routes, validation rules, resources and the database column types. Scramble is a development dependency only; it is not installed in the images.
+
+After changing the API, regenerate the document and commit it with the change:
+
+```sh
+composer openapi
+```
+
+Three checks keep the document honest:
+
+| Check | Fails when |
+|---|---|
+| `OpenApiDocumentTest` | The code changed and `openapi.json` was not regenerated |
+| `ApiContractTest` | A real response does not match the document (a missing field, a wrong type) |
+| `API contract` job in CI ([oasdiff](https://github.com/oasdiff/oasdiff)) | A pull request makes a change that breaks clients compared with the base branch, such as removing a field or adding a required parameter. Adding fields or endpoints is fine. |
+
+A breaking change goes into a new version (`/api/v2`) while `/api/v1` keeps working.
+
+With `APP_ENV=local`, the documentation can also be browsed at `/docs/api`.
+
 ## Database timeouts
 
 | Variable | Default | Effect |
