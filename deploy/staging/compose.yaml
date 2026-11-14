@@ -20,6 +20,9 @@ x-backend: &backend
     APP_KEY: ${APP_KEY:?Set APP_KEY}
     APP_URL: ${APP_URL:?Set APP_URL}
     PHP_CLI_SERVER_WORKERS: "2"
+    # The backend is reachable only through the tunnel and from the frontend, so the
+    # visitor address Cloudflare sends can be trusted (rate limits per visitor).
+    CLIENT_IP_HEADER: CF-Connecting-IP
     DB_CONNECTION: pgsql
     DB_HOST: db
     DB_PORT: "5432"

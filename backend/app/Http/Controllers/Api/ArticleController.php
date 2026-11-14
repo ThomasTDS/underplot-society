@@ -8,6 +8,9 @@ use App\Http\Requests\ListArticlesRequest;
 use App\Http\Resources\ArticleResource;
 use App\Http\Resources\ArticleSummaryResource;
 use App\Models\ArticleTranslation;
+// Documentation only (Scramble is a development dependency); PHP does not load
+// attribute classes unless something reads them.
+use Dedoc\Scramble\Attributes\Response as DocumentedResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +21,7 @@ use Illuminate\Http\JsonResponse;
  */
 class ArticleController extends Controller
 {
+    #[DocumentedResponse(429, 'Too many requests from this visitor; retry after the number of seconds in Retry-After.', type: 'array{message: string}')]
     public function index(ListArticlesRequest $request, Locale $locale): JsonResponse
     {
         $page = $this->visibleIn($locale)
@@ -40,6 +44,7 @@ class ArticleController extends Controller
         ]);
     }
 
+    #[DocumentedResponse(429, 'Too many requests from this visitor; retry after the number of seconds in Retry-After.', type: 'array{message: string}')]
     public function show(Locale $locale, string $slug): ArticleResource
     {
         $translation = $this->visibleIn($locale)

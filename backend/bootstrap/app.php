@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\RemoveServerHeaders;
+use App\Http\Middleware\ResolveClientIp;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // First, so everything after it (rate limits, logs) sees the visitor's address.
+        $middleware->prepend(ResolveClientIp::class);
         $middleware->append(RemoveServerHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
