@@ -33,8 +33,14 @@ class ArticlesApiTest extends TestCase
         $this->translation('published-now', publishedAt: now());
         $this->translation('scheduled', publishedAt: now()->addMinute());
         $this->translation('draft', status: PublicationStatus::Draft, publishedAt: now()->subDay());
-        $this->translation('draft-without-date', status: PublicationStatus::Draft);
-        $this->translation('published-without-date', publishedAt: null);
+        $this->translation('draft-without-date', status: PublicationStatus::Draft, publishedAt: null);
+        // The models fill in the date when publishing; a row written around them
+        // (a manual fix in the database) without one still stays hidden.
+        DB::table('article_translations')->insert([
+            'article_id' => Article::factory()->create()->id,
+            'locale' => 'en', 'slug' => 'published-without-date', 'title' => 'x', 'summary' => 'x', 'body' => 'x',
+            'status' => 'published', 'published_at' => null,
+        ]);
 
         $this->getJson('/api/v1/en/articles')
             ->assertOk()

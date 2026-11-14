@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Locale;
 use Database\Factories\AreaFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,5 +35,16 @@ class Area extends Model
     public function articles(): HasMany
     {
         return $this->hasMany(Article::class);
+    }
+
+    /**
+     * The name shown in the admin panel: the English one, or any if English is missing.
+     */
+    public function label(): string
+    {
+        $translation = $this->translations->first(fn (AreaTranslation $t) => $t->locale === Locale::En)
+            ?? $this->translations->first();
+
+        return $translation === null ? "Area #{$this->id}" : $translation->name;
     }
 }
