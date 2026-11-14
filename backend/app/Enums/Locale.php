@@ -13,6 +13,18 @@ enum Locale: string
     case Es = 'es';
 
     /**
+     * The language's name in that language, as shown in the admin panel.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::En => 'English',
+            self::PtBr => 'Português (Brasil)',
+            self::Es => 'Español',
+        };
+    }
+
+    /**
      * @return list<string>
      */
     public static function values(): array

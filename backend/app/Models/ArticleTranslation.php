@@ -38,6 +38,19 @@ class ArticleTranslation extends Model
     /** @use HasFactory<ArticleTranslationFactory> */
     use HasFactory;
 
+    /** Lowercase words separated by single hyphens; the same pattern the API routes accept. */
+    public const SLUG_PATTERN = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
+
+    protected static function booted(): void
+    {
+        // Published without a date means published now.
+        static::saving(function (self $translation) {
+            if ($translation->status === PublicationStatus::Published && $translation->published_at === null) {
+                $translation->published_at = CarbonImmutable::now();
+            }
+        });
+    }
+
     /**
      * @var array<string, mixed>
      */

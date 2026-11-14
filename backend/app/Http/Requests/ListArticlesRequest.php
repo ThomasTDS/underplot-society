@@ -2,13 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Models\ArticleTranslation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class ListArticlesRequest extends FormRequest
 {
-    public const SLUG_PATTERN = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
-
     public const DEFAULT_PER_PAGE = 12;
 
     public const MAX_PER_PAGE = 50;
@@ -22,7 +21,7 @@ class ListArticlesRequest extends FormRequest
             'page' => ['sometimes', 'integer', 'min:1', 'max:10000'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:'.self::MAX_PER_PAGE],
             'area' => [
-                'sometimes', 'string', 'max:100', 'regex:'.self::SLUG_PATTERN,
+                'sometimes', 'string', 'max:100', 'regex:'.ArticleTranslation::SLUG_PATTERN,
                 Rule::exists('area_translations', 'slug')->where('locale', $this->route('locale')),
             ],
         ];
