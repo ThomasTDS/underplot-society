@@ -18,21 +18,19 @@ use Illuminate\Http\JsonResponse;
  */
 class ArticleController extends Controller
 {
-    public function index(ListArticlesRequest $request, string $locale): JsonResponse
+    public function index(ListArticlesRequest $request, Locale $locale): JsonResponse
     {
-        $language = Locale::from($locale);
-
-        $page = $this->visibleIn($language)
+        $page = $this->visibleIn($locale)
             ->when($request->area(), fn (Builder $query, string $area) => $query->whereHas(
                 'article.area.translations',
-                fn (Builder $q) => $q->where('locale', $language)->where('slug', $area),
+                fn (Builder $q) => $q->where('locale', $locale)->where('slug', $area),
             ))
             ->orderByDesc('published_at')
             ->orderByDesc('id')
             ->paginate(perPage: $request->perPage(), page: $request->page());
 
         return response()->json([
-            'data' => ArticleSummaryResource::collection($page->items())->resolve($request),
+            'data' => ArticleSummaryResource::collection($page->items()),
             'meta' => [
                 'current_page' => $page->currentPage(),
                 'last_page' => $page->lastPage(),
@@ -42,11 +40,9 @@ class ArticleController extends Controller
         ]);
     }
 
-    public function show(string $locale, string $slug): ArticleResource
+    public function show(Locale $locale, string $slug): ArticleResource
     {
-        $language = Locale::from($locale);
-
-        $translation = $this->visibleIn($language)
+        $translation = $this->visibleIn($locale)
             ->where('slug', $slug)
             ->with(['article.translations' => fn (HasMany $q) => $q->visible()])
             ->firstOrFail();

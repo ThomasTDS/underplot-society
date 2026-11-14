@@ -79,6 +79,34 @@ jobs:
           DB_DATABASE: underplot
           DB_URL: ""
 
+  api-contract:
+    name: API contract
+    # Compares backend/openapi.json in the pull request with the one on the base branch
+    # and fails on changes that would break a client (a removed field, a new required
+    # parameter...). The Backend job already checks that the document matches the code.
+    # A breaking change goes into a new version (/api/v2) instead.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Breaking changes (oasdiff)
+        run: |
+          git fetch --quiet --depth=1 origin "$BASE_SHA"
+          if ! git show "$BASE_SHA:backend/openapi.json" > "$RUNNER_TEMP/base.json" 2>/dev/null; then
+            echo "The base branch has no openapi.json yet; nothing to compare."
+            exit 0
+          fi
+          cp backend/openapi.json "$RUNNER_TEMP/revision.json"
+          docker run --rm --network none -v "$RUNNER_TEMP:/specs:ro" "$OASDIFF" \
+            breaking /specs/base.json /specs/revision.json --fail-on ERR
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          OASDIFF: tufin/oasdiff:v1.35.0@sha256:82b1840a77335562bb11ce95f77ad31745a0c6f3a770929333ed1c5ef466e400
+
   frontend:
     name: Frontend
     runs-on: ubuntu-24.04
