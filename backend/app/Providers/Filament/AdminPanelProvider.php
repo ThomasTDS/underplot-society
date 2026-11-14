@@ -29,6 +29,9 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            // Moving between pages swaps the content instead of reloading the whole
+            // page, which is what makes the panel feel slow on a small server.
+            ->spa()
             ->brandName('Underplot Society')
             ->colors([
                 // Royal Purple, from the brand identity.

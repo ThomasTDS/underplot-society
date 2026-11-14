@@ -141,7 +141,7 @@ curl -I https://staging.underplotsociety.com.br/       # the site, through Cloud
 curl https://staging.underplotsociety.com.br/api/health # {"status":"ok"}
 curl -I https://staging.underplotsociety.com.br/.env   # 403, blocked by the WAF
 curl -I https://staging-admin.underplotsociety.com.br/admin  # 302 to the panel's login
-curl -I https://staging.underplotsociety.com.br/admin        # 404: the panel is not on the site's host
+curl -IL https://staging.underplotsociety.com.br/admin       # ends in the site's 404: the panel is not on its host
 curl -m 5 http://<server-ip>/                          # fails: no port open
 ```
 
