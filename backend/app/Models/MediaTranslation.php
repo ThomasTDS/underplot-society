@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $media_id
  * @property Locale $locale
  * @property string $alt_text
+ * @property-read Media $media
  */
 #[Fillable(['locale', 'alt_text'])]
 class MediaTranslation extends Model
