@@ -47,6 +47,25 @@ The database listens on `127.0.0.1` only.
 
 Failure details are written to the application log only. Responses are sent with `Cache-Control: no-store`.
 
+## Articles API
+
+Read-only, public. `{locale}` is `en`, `pt-br` or `es`.
+
+| Request | Returns |
+|---|---|
+| `GET /api/v1/{locale}/articles` | Articles in that language, newest first: `data` (slug, title, summary, `published_at`, area, cover) and `meta` (`current_page`, `last_page`, `per_page`, `total`) |
+| `GET /api/v1/{locale}/articles/{slug}` | One article in `data`: the summary fields plus the Markdown `body`, `seo` (title and description, falling back to the title and summary), `updated_at` and `translations`, the slug in each language it is published in |
+
+Query parameters for the list: `page` (1 to 10000), `per_page` (1 to 50, default 12) and `area` (an area slug in the same language).
+
+Only translations with status `published` and a `published_at` that has arrived are returned; drafts and scheduled translations do not exist as far as the API is concerned. The area name and the cover's alternative text come in the requested language, and a cover without alternative text in that language is returned as `null`.
+
+| Situation | Status |
+|---|---|
+| Unknown language, malformed slug, or no visible article with that slug in that language | `404` with `{"message": "Not Found"}` |
+| Invalid query parameter (out of range, not a number, unknown area) | `422` with `message` and `errors` per field |
+| Any method other than `GET` or `HEAD` | `405` |
+
 ## Database timeouts
 
 | Variable | Default | Effect |

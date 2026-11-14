@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property int $area_id
  * @property int|null $cover_media_id
+ * @property-read Area $area
+ * @property-read Media|null $cover
  */
 #[Fillable(['area_id', 'cover_media_id'])]
 class Article extends Model

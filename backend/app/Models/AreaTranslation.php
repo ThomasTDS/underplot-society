@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Locale $locale
  * @property string $name
  * @property string $slug
+ * @property-read Area $area
  */
 #[Fillable(['locale', 'name', 'slug'])]
 class AreaTranslation extends Model

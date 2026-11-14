@@ -7,6 +7,8 @@ use App\Enums\PublicationStatus;
 use Carbon\CarbonImmutable;
 use Database\Factories\ArticleTranslationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable|null $published_at
  * @property string|null $seo_title
  * @property string|null $seo_description
+ * @property-read Article $article
  */
 #[Fillable([
     'locale', 'slug', 'title', 'summary', 'body', 'status', 'published_at',
@@ -52,6 +55,29 @@ class ArticleTranslation extends Model
             'status' => PublicationStatus::class,
             'published_at' => 'immutable_datetime',
         ];
+    }
+
+    /**
+     * What readers may see: published, with a publication time that has arrived.
+     * Drafts and scheduled translations are left out.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function visible(Builder $query): void
+    {
+        $query->where('status', PublicationStatus::Published)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inLocale(Builder $query, Locale $locale): void
+    {
+        $query->where('locale', $locale);
     }
 
     /**
