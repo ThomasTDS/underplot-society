@@ -73,6 +73,17 @@ class ApiContractTest extends TestCase
         );
     }
 
+    public function test_a_rate_limited_response_matches_the_document(): void
+    {
+        config(['api.rate_limit' => 1]);
+        $this->getJson('/api/v1/en/articles')->assertOk();
+
+        $this->assertMatches(
+            $this->getJson('/api/v1/en/articles')->assertTooManyRequests(),
+            '/v1/{locale}/articles',
+        );
+    }
+
     public function test_the_health_check_matches_the_document(): void
     {
         $this->assertMatches($this->getJson('/api/health')->assertOk(), '/health');

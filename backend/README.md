@@ -65,6 +65,19 @@ Only translations with status `published` and a `published_at` that has arrived 
 | Unknown language, malformed slug, or no visible article with that slug in that language | `404` with `{"message": "Not Found"}` |
 | Invalid query parameter (out of range, not a number, unknown area) | `422` with `message` and `errors` per field |
 | Any method other than `GET` or `HEAD` | `405` |
+| Over the rate limit | `429` with `Retry-After` |
+
+### Rate limits and caching
+
+| Variable | Default | Effect |
+|---|---|---|
+| `API_RATE_LIMIT` | `60` | Requests per minute per visitor to `/api/v1` |
+| `API_INTERNAL_RATE_LIMIT` | `600` | Requests per minute shared by the frontend's server, when `CLIENT_IP_HEADER` is set |
+| `CLIENT_IP_HEADER` | empty | Header with the visitor's address set by the proxy in front of the app (`CF-Connecting-IP` on staging). Set it only when the app is reachable solely through that proxy and from the frontend: otherwise anyone could send a fake address. Requests without it are counted as the frontend's. |
+
+Every `/api/v1` response sets `X-RateLimit-Limit` and `X-RateLimit-Remaining`. `/api/health` is not limited.
+
+Successful responses carry an `ETag` and a `Cache-Control` with `public` and `no-cache`. Clients check with the server every time, so a newly published article shows up at once. A client that sends the ETag back in `If-None-Match` gets a `304` with no body while nothing has changed.
 
 ## OpenAPI document
 
