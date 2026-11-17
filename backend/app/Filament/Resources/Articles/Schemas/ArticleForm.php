@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Articles\Schemas;
 use App\Enums\PublicationStatus;
 use App\Filament\Support\Translations;
 use App\Models\Area;
+use App\Models\Media;
 use App\Support\Markdown;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
@@ -34,6 +35,16 @@ class ArticleForm
                                 ->orderBy('position')
                                 ->get()
                                 ->mapWithKeys(fn (Area $area) => [$area->id => $area->label()])
+                                ->all()),
+                        Select::make('cover_media_id')
+                            ->label('Cover image')
+                            ->helperText('Upload images under Images; every image has alternative text in the three languages.')
+                            ->searchable()
+                            ->options(fn () => Media::query()
+                                ->with('translations')
+                                ->latest()
+                                ->get()
+                                ->mapWithKeys(fn (Media $media) => [$media->id => $media->altText() ?? "Image #{$media->id}"])
                                 ->all()),
                     ]),
 

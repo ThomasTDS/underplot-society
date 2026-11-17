@@ -4,7 +4,7 @@ Idempotent: every run brings the account and zone to the state below, creating
 what is missing and overwriting what drifted.
 
   1. Tunnel (remotely managed) routing ADMIN_HOSTNAME (optional, all paths) and
-     HOSTNAME/api/* (optional) -> API_ORIGIN, and HOSTNAME -> ORIGIN; anything
+     HOSTNAME/api/* and /storage/* (optional) -> API_ORIGIN, and HOSTNAME -> ORIGIN; anything
      else gets 404.
   2. Proxied DNS CNAME for each hostname -> <tunnel id>.cfargotunnel.com.
   3. Zone TLS and HTTPS settings (full strict, TLS 1.2+, HTTPS only, HSTS).
@@ -105,8 +105,10 @@ def ensure_tunnel(cf, account, name, hostname, origin, api_origin, admin_hostnam
         ingress.append({"hostname": admin_hostname, "service": api_origin})
         log(f"tunnel {name}: {admin_hostname} -> {api_origin}")
     if api_origin:
-        ingress.append({"hostname": hostname, "path": "^/api/", "service": api_origin})
-        log(f"tunnel {name}: {hostname}/api/* -> {api_origin}")
+        # The API, and the uploaded images it links to (/storage/media/...).
+        for path in ("^/api/", "^/storage/"):
+            ingress.append({"hostname": hostname, "path": path, "service": api_origin})
+        log(f"tunnel {name}: {hostname}/api/* and /storage/* -> {api_origin}")
     ingress += [{"hostname": hostname, "service": origin}, {"service": "http_status:404"}]
     cf.call("PUT", f"/accounts/{account}/cfd_tunnel/{tunnel_id}/configurations", {"config": {"ingress": ingress}})
     log(f"tunnel {name}: {hostname} -> {origin}, everything else 404")

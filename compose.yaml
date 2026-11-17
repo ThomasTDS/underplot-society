@@ -62,6 +62,9 @@ services:
     <<: *backend
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    # Uploaded images outlive the container.
+    volumes:
+      - media:/app/storage/app/public
     depends_on:
       db:
         condition: service_healthy
@@ -86,3 +89,4 @@ services:
 
 volumes:
   db-data:
+  media:

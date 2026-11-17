@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Encrypted database backup, pushed to a private Git repository off the server.
+# Encrypted database backup, plus a copy of the uploaded images, pushed to a private
+# Git repository off the server.
 # Runs daily from underplot-backup.timer; can also be run by hand as root:
 #   sudo bash backup.sh
 # The dump is encrypted on the server with age, to a public key whose private half is
@@ -33,6 +34,15 @@ for f in "$repo_dir"/staging/*.dump.age; do
   day="$(basename "$f" .dump.age)"
   if [[ "$day" < "$cutoff" ]]; then git_ rm --quiet "staging/$day.dump.age"; fi
 done
+
+# Uploaded images, mirrored as plain files: they are published on the site anyway,
+# and unencrypted copies let Git store each image once instead of every day.
+media_dir="$repo_dir/staging-media"
+rm -rf "$media_dir" && mkdir -p "$media_dir"
+if docker exec underplot-backend-1 test -d storage/app/public/media; then
+  docker cp underplot-backend-1:/app/storage/app/public/media/. "$media_dir/"
+fi
+git_ add --all staging-media
 
 git_ add "$file"
 git_ commit --quiet -m "staging backup $(date -u +%FT%TZ)"
