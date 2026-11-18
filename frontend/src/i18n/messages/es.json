@@ -14,5 +14,11 @@
     "title": "Página no encontrada",
     "body": "Esta página no existe o cambió de dirección.",
     "home": "Ir a la página de inicio"
+  },
+  "theme": {
+    "legend": "Tema",
+    "system": "Automático",
+    "light": "Claro",
+    "dark": "Oscuro"
   }
 }

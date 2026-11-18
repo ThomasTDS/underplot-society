@@ -3,9 +3,13 @@
  * Ancient Gold #D9A441, Ivory #F5F3F7), adjusted so every pairing meets WCAG AA.
  * Components use these variables only, never literal colors.
  *
- * The dark theme is the default. The light theme applies with data-theme="light"
- * on <html>. tokens.test.ts checks every text and component pairing in both themes,
- * so a color change that breaks contrast fails CI.
+ * Themes (src/theme/theme.ts):
+ * - No saved choice: follows the system (prefers-color-scheme); dark if the
+ *   browser cannot tell (for example, CSS media queries unsupported).
+ * - data-theme="light" or "dark" on <html>: the reader's saved choice wins.
+ * The light values appear twice, for the saved choice and for a light system;
+ * tokens.test.ts checks both copies are identical, and checks every text and
+ * component pairing in both themes, so a color change that breaks contrast fails CI.
  *
  * Where the brand colors fall short:
  * - Royal Purple on Obsidian is 1.97:1. The dark theme uses a lighter purple for
@@ -95,4 +99,31 @@
   --color-accent-decorative: #d9a441;
 
   color-scheme: light;
+}
+
+/* Keep identical to the block above. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --color-bg: #f5f3f7;
+    --color-surface: #ffffff;
+    --color-raised: #ffffff;
+
+    --color-text: #111116;
+    --color-text-muted: #5e586a;
+    --color-link: #5426a5;
+    --color-accent: #8f661b;
+
+    --color-button: #5426a5;
+    --color-button-text: #f5f3f7;
+    --color-border: #8e879b;
+    --color-focus: #5426a5;
+
+    --color-success: #1a7347;
+    --color-danger: #c62d33;
+
+    --color-divider: #e2dee8;
+    --color-accent-decorative: #d9a441;
+
+    color-scheme: light;
+  }
 }

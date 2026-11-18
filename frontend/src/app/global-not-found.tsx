@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { htmlLang, locales } from "@/i18n/config";
 import { getMessages } from "@/i18n/dictionaries";
 import { fontVariables } from "@/styles/fonts";
+import { ThemeScript } from "@/theme/ThemeScript";
 import "./globals.css";
 import styles from "./global-not-found.module.css";
 
@@ -16,7 +17,10 @@ export const metadata: Metadata = {
  */
 export default function GlobalNotFound() {
   return (
-    <html lang="en" className={fontVariables}>
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body>
         <main className={styles.main}>
           <h1 className={styles.code}>404</h1>
