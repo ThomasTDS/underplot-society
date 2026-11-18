@@ -162,7 +162,8 @@ jobs:
           node-version: "26"
 
       # Every step runs even if an earlier one fails, so a single run reports all three audits.
-      # Only high and critical advisories fail the job.
+      # Only high and critical advisories fail the job. For npm, a specific advisory can be
+      # tolerated through .github/npm-audit-allowlist.json, with a reason and a review date.
       - name: Backend (Composer)
         if: ${{ !cancelled() }}
         working-directory: backend
@@ -171,12 +172,12 @@ jobs:
       - name: Frontend (npm)
         if: ${{ !cancelled() }}
         working-directory: frontend
-        run: npm audit --audit-level=high
+        run: node ../.github/scripts/npm-audit.mjs
 
       - name: End-to-end tests (npm)
         if: ${{ !cancelled() }}
         working-directory: e2e
-        run: npm audit --audit-level=high
+        run: node ../.github/scripts/npm-audit.mjs
 
   e2e:
     name: End-to-end
