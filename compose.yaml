@@ -28,6 +28,10 @@ x-backend: &backend
     DB_DATABASE: ${DB_DATABASE:-underplot}
     DB_USERNAME: ${DB_USERNAME:-underplot}
     DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    # No proxy header here, so every page the frontend renders counts against one
+    # visitor's limit, and the end-to-end suite goes past 60 a minute. Staging keeps
+    # the real limits; the limiter itself is tested in the backend suite.
+    API_RATE_LIMIT: ${API_RATE_LIMIT:-1000}
 
 services:
   db:

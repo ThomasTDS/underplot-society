@@ -45,6 +45,7 @@
     "pagination": "Pages",
     "previous": "Previous page",
     "next": "Next page",
-    "pageOf": "Page {page} of {total}"
+    "pageOf": "Page {page} of {total}",
+    "notInLanguage": "This article is not available in English. Here are the other articles."
   }
 }

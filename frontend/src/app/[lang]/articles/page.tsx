@@ -57,6 +57,11 @@ async function Articles({
 
   return (
     <>
+      {query.unavailable === "article" && (
+        <p className={styles.fallback} role="status">
+          {labels.notInLanguage}
+        </p>
+      )}
       {areas.kind === "ok" && areas.data.length > 0 && (
         <AreaFilter areas={areas.data} current={area} lang={lang} labels={labels} />
       )}
