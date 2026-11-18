@@ -20,6 +20,10 @@ function runInitScript() {
 }
 
 describe("init script", () => {
+  it("reads the same storage key the switcher writes", () => {
+    expect(themeInitScript).toContain(`localStorage.getItem("${THEME_STORAGE_KEY}")`);
+  });
+
   it.each(["light", "dark"])("applies a saved %s theme", (theme) => {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
     runInitScript();

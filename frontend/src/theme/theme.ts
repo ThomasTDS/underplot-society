@@ -15,10 +15,13 @@ function isSavedTheme(value: unknown): value is SavedTheme {
   return value === "light" || value === "dark";
 }
 
-/** Runs in <head> before the body is parsed, so a saved theme never flashes. */
-export const themeInitScript = `(function(){try{var t=localStorage.getItem(${JSON.stringify(
-  THEME_STORAGE_KEY,
-)});if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}})();`;
+/**
+ * Runs in <head> before the body is parsed, so a saved theme never flashes.
+ * A fixed string, with nothing interpolated; theme.test.ts checks it reads
+ * THEME_STORAGE_KEY.
+ */
+export const themeInitScript =
+  '(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}})();';
 
 function apply(theme: SavedTheme | null) {
   if (theme) {
