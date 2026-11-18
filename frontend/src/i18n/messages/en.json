@@ -14,5 +14,11 @@
     "title": "Page not found",
     "body": "This page does not exist or has moved.",
     "home": "Go to the home page"
+  },
+  "theme": {
+    "legend": "Theme",
+    "system": "Automatic",
+    "light": "Light",
+    "dark": "Dark"
   }
 }

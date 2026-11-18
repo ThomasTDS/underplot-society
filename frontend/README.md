@@ -51,10 +51,23 @@ The rest of the page is prerendered; only the status is rendered at request time
 
 Colors, type, spacing and shape are CSS variables in [`src/styles/tokens.css`](src/styles/tokens.css). Components use the variables only. A test fails on any literal color (`#…`, `rgb()`, `hsl()`) in another stylesheet.
 
-| Theme | When | Notes |
-|---|---|---|
-| Dark | Default | The brand's own look: Obsidian background, Ivory text, gold accents |
-| Light | `data-theme="light"` on `<html>` | Ivory background, Obsidian text, Royal Purple links |
+| Theme | Notes |
+|---|---|
+| Dark | The brand's own look: Obsidian background, Ivory text, gold accents |
+| Light | Ivory background, Obsidian text, Royal Purple links |
+
+### Theme switching
+
+The footer offers three modes: **Automatic** (the default), **Light** and **Dark** ([`src/theme/`](src/theme/)).
+
+| Mode | How it works |
+|---|---|
+| Automatic | Nothing is stored. CSS follows the system through `prefers-color-scheme`, and changes live when the system does. |
+| Light or Dark | Saved in `localStorage` (`theme`) and set as `data-theme` on `<html>`, which wins over the system. Applies to every page and language, and to other open tabs. |
+
+A small inline script in `<head>` applies a saved theme before the body is parsed, so the page never flashes the wrong theme, even before the app's JavaScript loads. If storage is blocked, the site follows the system. The light values appear twice in `tokens.css` (saved choice and light system); a test fails if the two copies differ.
+
+The control is a group of native radio buttons, so arrow keys move between modes and screen readers announce the group.
 
 The palette starts from the brand colors and adjusts them where they fall short of WCAG AA:
 - Royal Purple on Obsidian is 1.97:1, so the dark theme uses a lighter purple for links and focus, and a mid purple for buttons.

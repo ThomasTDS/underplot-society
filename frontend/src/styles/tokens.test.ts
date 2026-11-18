@@ -76,6 +76,21 @@ describe("token sets", () => {
     expect(Object.keys(block(':root[data-theme="light"]')).sort()).toEqual(Object.keys(dark).sort());
   });
 
+  it("a light system gets exactly the light theme", () => {
+    const media = css.match(
+      /@media \(prefers-color-scheme: light\)\s*\{\s*:root:not\(\[data-theme="dark"\]\)\s*\{([^}]*)\}\s*\}/,
+    );
+    const lightBlock = css.match(/(?:^|\n):root\[data-theme="light"\]\s*\{([^}]*)\}/);
+    const declarations = (body: string) =>
+      body
+        .split(";")
+        .map((d) => d.replace(/\s+/g, " ").trim())
+        .filter(Boolean);
+
+    expect(media, "missing the prefers-color-scheme: light block").not.toBeNull();
+    expect(declarations(media![1])).toEqual(declarations(lightBlock![1]));
+  });
+
   it("the contrast function matches known WCAG values", () => {
     expect(contrast("#000000", "#ffffff")).toBeCloseTo(21, 5);
     expect(contrast("#777777", "#ffffff")).toBeCloseTo(4.48, 2);
