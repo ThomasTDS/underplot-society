@@ -1,0 +1,11 @@
+{
+  "_comment": "High or critical npm advisories that CI tolerates, one by one, each with the reason and a date to look again. Past that date the audit fails until the entry is reviewed. Remove an entry as soon as a fixed version is installed.",
+  "advisories": [
+    {
+      "id": "GHSA-fc5q-39xc-vjpf",
+      "package": "picomatch",
+      "reason": "ReDoS through extglob patterns. Every version up to 4.0.7 is affected and there is no fix yet. It reaches only development tools (ESLint, Vite, Vitest), never the site's production dependencies (npm audit --omit=dev finds nothing), and those tools only match glob patterns written in this repository, not input from users.",
+      "review_by": "2026-12-17"
+    }
+  ]
+}

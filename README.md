@@ -66,7 +66,7 @@ Every pull request and every push to `main` runs [`.github/workflows/ci.yml`](.g
 |---|---|
 | Backend | Code style (Pint), static analysis (Larastan, level 8), PHP tests against PostgreSQL |
 | Frontend | ESLint, TypeScript, unit and component tests (including accessibility checks), production build |
-| Dependency audit | `composer audit` and `npm audit` on every lock file. High and critical advisories fail the job. |
+| Dependency audit | `composer audit` and `npm audit` on every lock file. High and critical advisories fail the job. For npm, a specific advisory can be tolerated in [`.github/npm-audit-allowlist.json`](.github/npm-audit-allowlist.json), with the reason and a review date; past that date the job fails again. |
 | End-to-end | Starts the full stack with Docker Compose, then runs the Playwright browser and API tests, including the database-down case. Runs only when Backend and Frontend pass. |
 
 The Playwright reports and failure traces are attached to each run as the `playwright-report` artifact. Third-party actions are pinned to a full commit hash.
