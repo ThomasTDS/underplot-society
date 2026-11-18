@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { htmlLang, isLocale, locales } from "@/i18n/config";
 import { getMessages } from "@/i18n/dictionaries";
+import { fontVariables } from "@/styles/fonts";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -27,7 +28,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
   }
 
   return (
-    <html lang={htmlLang[lang]}>
+    <html lang={htmlLang[lang]} className={fontVariables}>
       <body>{children}</body>
     </html>
   );
