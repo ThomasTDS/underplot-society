@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Locale;
+use App\Http\Controllers\Api\AreaController;
 use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\HealthController;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,7 @@ Route::prefix('v1/{locale}')
     ->middleware(['throttle:content-api', 'cache.headers:public;no_cache;etag'])
     ->name('v1.')
     ->group(function () {
+        Route::get('/areas', [AreaController::class, 'index'])->name('areas.index');
         Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
         Route::get('/articles/{slug}', [ArticleController::class, 'show'])
             ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')

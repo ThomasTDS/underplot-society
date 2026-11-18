@@ -97,6 +97,20 @@ Every page under `[lang]` shares the layout in `src/app/[lang]/layout.tsx` ([`sr
 
 The header and footer wrap instead of collapsing into a menu, so every control stays visible on a phone. Playwright checks the layout at phone and desktop widths in every language, the absence of sideways scrolling, and the Tab order.
 
+## Articles
+
+| Page | Address | Notes |
+|---|---|---|
+| Home | `/{lang}` | The 3 latest articles |
+| List | `/{lang}/articles` | Area filter (`?area=`) and pages (`?page=`), both plain links |
+| Article | `/{lang}/articles/{slug}` | The language switcher goes to the article's own slug in each language |
+
+Content comes from the API at request time ([`src/lib/content-api.ts`](src/lib/content-api.ts), server only). Every response is checked against the expected shape; anything else shows "unavailable" instead of the content. A cover image only gets an `http(s)` address.
+
+**HTML safety.** Titles, summaries and area names are always rendered as text. The article body is the only HTML on the site, and it arrives sanitized from the API (`body_html`). There, CommonMark first escapes raw HTML and drops unsafe links, then an allow-list sanitizer removes anything outside safe elements and attributes. A Playwright test opens an article full of script attempts in all three languages and checks that none runs.
+
+**Known gap.** An unknown article gets the translated "not found" page, but with status `200` and a `noindex` added by script: the response has already started streaming when the API says 404. A real `404` is part of the rendering strategy work (prerendering and revalidation).
+
 ## Quality checks
 
 ```sh

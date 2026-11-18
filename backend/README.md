@@ -54,7 +54,10 @@ Read-only, public. `{locale}` is `en`, `pt-br` or `es`.
 | Request | Returns |
 |---|---|
 | `GET /api/v1/{locale}/articles` | Articles in that language, newest first: `data` (slug, title, summary, `published_at`, area, cover) and `meta` (`current_page`, `last_page`, `per_page`, `total`) |
-| `GET /api/v1/{locale}/articles/{slug}` | One article in `data`: the summary fields plus the Markdown `body`, `seo` (title and description, falling back to the title and summary), `updated_at` and `translations`, the slug in each language it is published in |
+| `GET /api/v1/{locale}/articles/{slug}` | One article in `data`: the summary fields plus the Markdown `body`, the sanitized `body_html`, `seo` (title and description, falling back to the title and summary), `updated_at` and `translations`, the slug in each language it is published in |
+| `GET /api/v1/{locale}/areas` | Areas that have at least one visible article in that language, in their set order: `data` (slug, name) |
+
+`body_html` is rendered by `App\Support\Markdown`, the same code as the admin preview, in two independent layers. First, CommonMark escapes raw HTML and drops links with unsafe schemes. Then an allow-list sanitizer (`symfony/html-sanitizer`) keeps only safe elements and attributes and only `http`, `https` and `mailto` links, and adds `rel="noopener noreferrer"` to links. A script tag, event handler, iframe, form or `javascript:` link in an article never reaches the site as markup.
 
 Query parameters for the list: `page` (1 to 10000), `per_page` (1 to 50, default 12) and `area` (an area slug in the same language).
 
@@ -78,6 +81,16 @@ Only translations with status `published` and a `published_at` that has arrived 
 Every `/api/v1` response sets `X-RateLimit-Limit` and `X-RateLimit-Remaining`. `/api/health` is not limited.
 
 Successful responses carry an `ETag` and a `Cache-Control` with `public` and `no-cache`. Clients check with the server every time, so a newly published article shows up at once. A client that sends the ETag back in `If-None-Match` gets a `304` with no body while nothing has changed.
+
+## Sample content
+
+For staging and the end-to-end tests: three sample articles in two areas, in all three languages. Every title starts with "Sample", "Exemplo" or "Ejemplo", so they are easy to delete before launch. Running the seeder again adds nothing.
+
+```sh
+php artisan db:seed --class=SampleContentSeeder --force
+```
+
+`XssProbeSeeder` adds an article made of script attempts, for the end-to-end tests only. Do not run it on staging.
 
 ## OpenAPI document
 

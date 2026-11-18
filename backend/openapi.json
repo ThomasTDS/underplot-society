@@ -12,6 +12,76 @@
         }
     ],
     "paths": {
+        "/v1/{locale}/areas": {
+            "get": {
+                "operationId": "v1.areas.index",
+                "tags": [
+                    "Area"
+                ],
+                "parameters": [
+                    {
+                        "name": "locale",
+                        "in": "path",
+                        "required": true,
+                        "description": "The locale ID",
+                        "schema": {
+                            "$ref": "#/components/schemas/Locale"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "anyOf": [
+                                                    {
+                                                        "$ref": "#/components/schemas/AreaResource"
+                                                    },
+                                                    {
+                                                        "type": "null"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "429": {
+                        "description": "Too many requests from this visitor; retry after the number of seconds in Retry-After.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/{locale}/articles": {
             "get": {
                 "operationId": "v1.articles.index",
@@ -317,6 +387,10 @@
                         "type": "string",
                         "description": "Markdown."
                     },
+                    "body_html": {
+                        "type": "string",
+                        "description": "The body as HTML, sanitized on the server (App\\Support\\Markdown): no\nscript, style, iframe, form or event handler, and only http, https and\nmailto links. The same HTML the admin preview shows."
+                    },
                     "seo": {
                         "type": "object",
                         "properties": {
@@ -356,6 +430,7 @@
                     "area",
                     "cover",
                     "body",
+                    "body_html",
                     "seo",
                     "updated_at",
                     "translations"

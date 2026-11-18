@@ -14,7 +14,7 @@ class MarkdownPreviewTest extends TestCase
 
         $this->assertStringContainsString('<h1>Title</h1>', $html);
         $this->assertStringContainsString('<strong>bold</strong>', $html);
-        $this->assertStringContainsString('<a href="https://example.com">link</a>', $html);
+        $this->assertMatchesRegularExpression('#<a href="https://example.com" rel="noopener noreferrer">link</a>#', $html);
     }
 
     /**
@@ -28,6 +28,13 @@ class MarkdownPreviewTest extends TestCase
         yield 'javascript link' => ['[click](javascript:alert(1))', 'javascript:'];
         yield 'data link' => ['[click](data:text/html;base64,PHNjcmlwdD4=)', 'data:text/html'];
         yield 'vbscript link' => ['[click](vbscript:msgbox(1))', 'vbscript:'];
+        yield 'javascript image' => ['![x](javascript:alert(1))', 'javascript:'];
+        yield 'svg onload' => ['<svg onload=alert(1)>', '<svg'];
+        yield 'style tag' => ['<style>body{display:none}</style>', '<style'];
+        yield 'form' => ['<form action="https://evil.example"><input></form>', '<form'];
+        yield 'autolink with javascript' => ['<javascript:alert(1)>', 'href="javascript'];
+        yield 'entity-encoded scheme' => ['[click](&#106;avascript:alert(1))', 'href="&#106;avascript'];
+        yield 'html inside a link title' => ['[a](https://x.example "<script>alert(1)</script>")', '<script'];
     }
 
     #[DataProvider('hostileInput')]
@@ -36,5 +43,33 @@ class MarkdownPreviewTest extends TestCase
         $html = Markdown::toHtml($markdown)->toHtml();
 
         $this->assertStringNotContainsStringIgnoringCase($forbidden, $html);
+        $this->assertDoesNotMatchRegularExpression('/\son\w+\s*=/i', $html, 'no event handler attribute may survive');
+    }
+
+    public function test_regular_formatting_survives_the_sanitizer(): void
+    {
+        $markdown = '## Heading
+
+> Quote
+
+- one
+- two
+
+1. first
+
+`code` and
+
+```
+block
+```
+
+![Alt text](/storage/media/a.webp)
+
+[mail](mailto:a@example.com)';
+        $html = Markdown::toHtml($markdown)->toHtml();
+
+        foreach (['<h2>Heading</h2>', '<blockquote>', '<ul>', '<ol>', '<code>code</code>', '<pre><code>block', '<img src="/storage/media/a.webp" alt="Alt text"', 'href="mailto:'] as $expected) {
+            $this->assertStringContainsString($expected, $html);
+        }
     }
 }

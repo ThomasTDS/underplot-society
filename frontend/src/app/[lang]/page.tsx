@@ -1,10 +1,13 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { ArticleList, ArticlesUnavailable } from "@/components/articles/ArticleList";
 import { ApiStatus, ApiStatusPending, type ApiStatusLabels } from "@/components/ApiStatus";
 import { getApiStatus } from "@/lib/api-status";
-import { isLocale } from "@/i18n/config";
-import { getMessages } from "@/i18n/dictionaries";
+import { isLocale, type Locale } from "@/i18n/config";
+import { getMessages, type Messages } from "@/i18n/dictionaries";
+import { listArticles } from "@/lib/content-api";
 import styles from "./page.module.css";
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
@@ -20,6 +23,16 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       <h1 className={styles.title}>Underplot Society</h1>
       <p className={styles.tagline}>{messages.home.tagline}</p>
 
+      <section aria-labelledby="latest-articles" className={styles.section}>
+        <h2 id="latest-articles" className={styles.heading}>
+          {messages.articles.latest}
+        </h2>
+        <Suspense fallback={<p>{messages.articles.loading}</p>}>
+          <LatestArticles lang={lang} labels={messages.articles} />
+        </Suspense>
+        <Link href={`/${lang}/articles`}>{messages.articles.all}</Link>
+      </section>
+
       <section aria-labelledby="system-status" className={styles.section}>
         <h2 id="system-status" className={styles.heading}>
           {messages.status.heading}
@@ -30,6 +43,14 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       </section>
     </div>
   );
+}
+
+async function LatestArticles({ lang, labels }: { lang: Locale; labels: Messages["articles"] }) {
+  await connection();
+  const result = await listArticles(lang, { perPage: 3 });
+  if (result.kind !== "ok") return <ArticlesUnavailable labels={labels} />;
+
+  return <ArticleList articles={result.data.items} lang={lang} labels={labels} headingLevel={3} />;
 }
 
 async function LiveApiStatus({ labels }: { labels: ApiStatusLabels }) {
