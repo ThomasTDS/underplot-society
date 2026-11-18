@@ -86,6 +86,17 @@ A color change that breaks one of these pairings fails CI.
 
 Fonts are Space Grotesk (headings) and Inter (text), served from the site itself through `next/font/local` from the Fontsource packages (OFL-1.1). No request goes to Google or any other host. The Latin subset covers English, Portuguese and Spanish.
 
+## Base layout
+
+Every page under `[lang]` shares the layout in `src/app/[lang]/layout.tsx` ([`src/components/layout/`](src/components/layout/)):
+
+- **Skip link:** the first Tab stop. It is off screen until focused, then moves focus to `<main id="content">`.
+- **Header:** the provisional wordmark (links to the home page), the main navigation and the language switcher. The navigation lists only pages that exist, and marks the current one with `aria-current="page"`.
+- **Language switcher:** plain links to the same page in each language, so it works without JavaScript. Each name is in its own language and has its own `lang`. A click also sets the `locale` cookie, so `/` opens in that language next time.
+- **Footer:** the theme switcher.
+
+The header and footer wrap instead of collapsing into a menu, so every control stays visible on a phone. Playwright checks the layout at phone and desktop widths in every language, the absence of sideways scrolling, and the Tab order.
+
 ## Quality checks
 
 ```sh

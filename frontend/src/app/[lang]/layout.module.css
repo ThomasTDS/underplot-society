@@ -1,6 +1,33 @@
-.footer {
-  max-width: 40rem;
-  margin: 0 auto;
-  padding: var(--space-8) var(--space-6);
-  border-top: 1px solid var(--color-divider);
+/* Footer stays at the bottom on short pages. */
+.body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.content {
+  flex: 1;
+}
+
+/* Focus moved here by the skip link: a container, not a control, so no ring. */
+.content:focus {
+  outline: none;
+}
+
+/* Off screen until focused with the keyboard; then the first thing on the page. */
+.skipLink {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 10;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-button);
+  color: var(--color-button-text);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.skipLink:focus {
+  transform: none;
 }

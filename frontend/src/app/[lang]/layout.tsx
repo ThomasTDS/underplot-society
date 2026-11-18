@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { htmlLang, isLocale, locales } from "@/i18n/config";
 import { getMessages } from "@/i18n/dictionaries";
+import { SiteFooter } from "@/components/layout/SiteFooter";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 import { fontVariables } from "@/styles/fonts";
 import { ThemeScript } from "@/theme/ThemeScript";
-import { ThemeSwitcher } from "@/theme/ThemeSwitcher";
 import "../globals.css";
 import styles from "./layout.module.css";
 
@@ -38,12 +39,16 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
       <head>
         <ThemeScript />
       </head>
-      <body>
-        {children}
-        {/* Provisional place; the base layout (7.3) moves it into the site footer. */}
-        <footer className={styles.footer}>
-          <ThemeSwitcher labels={messages.theme} />
-        </footer>
+      <body className={styles.body}>
+        <a href="#content" className={styles.skipLink}>
+          {messages.skipLink}
+        </a>
+        <SiteHeader lang={lang} messages={messages} />
+        {/* tabIndex lets the skip link move keyboard focus here, not only the scroll position. */}
+        <main id="content" tabIndex={-1} className={styles.content}>
+          {children}
+        </main>
+        <SiteFooter messages={messages} />
       </body>
     </html>
   );

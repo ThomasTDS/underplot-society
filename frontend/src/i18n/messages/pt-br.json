@@ -20,5 +20,13 @@
     "system": "Automático",
     "light": "Claro",
     "dark": "Escuro"
+  },
+  "skipLink": "Pular para o conteúdo",
+  "nav": {
+    "label": "Principal",
+    "home": "Início"
+  },
+  "language": {
+    "label": "Idioma"
   }
 }
