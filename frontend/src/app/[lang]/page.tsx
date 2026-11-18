@@ -16,7 +16,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   const messages = getMessages(lang);
 
   return (
-    <main className={styles.main}>
+    <div className={styles.main}>
       <h1 className={styles.title}>Underplot Society</h1>
       <p className={styles.tagline}>{messages.home.tagline}</p>
 
@@ -28,7 +28,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           <LiveApiStatus labels={messages.status} />
         </Suspense>
       </section>
-    </main>
+    </div>
   );
 }
 

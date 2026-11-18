@@ -57,6 +57,7 @@
   --leading-tight: 1.2;
   --leading-body: 1.65;
   --measure: 68ch;
+  --layout-width: 64rem;
 
   /* Space, on a 4px grid */
   --space-1: 0.25rem;
