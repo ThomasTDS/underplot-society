@@ -13,6 +13,8 @@ export default defineConfig({
     alias: {
       // Fonts are compiled by Next at build time; tests get plain class names.
       "next/font/local": fileURLToPath(new URL("./src/test/next-font-local.ts", import.meta.url)),
+      // Next resolves this marker itself; in tests it is a no-op.
+      "server-only": "next/dist/compiled/server-only/empty",
     },
   },
 });

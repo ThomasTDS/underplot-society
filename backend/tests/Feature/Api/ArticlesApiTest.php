@@ -228,6 +228,21 @@ class ArticlesApiTest extends TestCase
         $this->getJson('/api/v1/en/articles')->assertJsonPath('meta.per_page', 12);
     }
 
+    public function test_the_article_carries_its_body_as_sanitized_html(): void
+    {
+        $this->translation('hostile', attributes: [
+            'body' => "## Heading\n\n<script>alert(1)</script>\n\n<img src=x onerror=alert(1)>\n\n[click](javascript:alert(1)) and [safe](https://example.com)",
+        ]);
+
+        $html = $this->getJson('/api/v1/en/articles/hostile')->assertOk()->json('data.body_html');
+
+        $this->assertStringContainsString('<h2>Heading</h2>', $html);
+        $this->assertStringContainsString('href="https://example.com"', $html);
+        foreach (['<script', '<img', 'javascript:'] as $forbidden) {
+            $this->assertStringNotContainsStringIgnoringCase($forbidden, $html);
+        }
+    }
+
     public function test_a_list_item_does_not_carry_the_body(): void
     {
         $this->translation('short');

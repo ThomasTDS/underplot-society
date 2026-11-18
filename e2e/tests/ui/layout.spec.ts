@@ -48,21 +48,27 @@ test.describe("keyboard", () => {
   test("Tab reaches every control in reading order, starting with the skip link", async ({ page }) => {
     await page.goto("/en");
 
+    // Tab through the whole page, until the footer's theme switcher.
     const order: string[] = [];
-    for (let i = 0; i < 7; i++) {
+    while (order.length < 50 && !order.at(-1)?.startsWith("radio:")) {
       await page.keyboard.press("Tab");
       order.push(await focused(page));
     }
-    expect(order).toEqual([
+
+    expect(order.slice(0, 7)).toEqual([
       `a: ${en.skipLink}`,
       "a: Underplot Society",
       `a: ${en.nav.home}`,
+      `a: ${en.nav.articles}`,
       "a: English",
       "a: Português",
       "a: Español",
-      // The radio group is one Tab stop; arrow keys move inside it (see theme.spec.ts).
-      "radio:system:",
     ]);
+    // Then the page content, and last the theme switcher: the radio group is one
+    // Tab stop; arrow keys move inside it (see theme.spec.ts).
+    expect(order).toContain(`a: ${en.articles.all}`);
+    expect(order.at(-1)).toBe("radio:system:");
+    expect(order).not.toContain("body");
   });
 
   test("the skip link appears on focus and moves focus to the content", async ({ page }) => {

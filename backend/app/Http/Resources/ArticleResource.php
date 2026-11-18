@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\ArticleTranslation;
+use App\Support\Markdown;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -30,6 +31,12 @@ class ArticleResource extends JsonResource
             'cover' => CoverResource::forLanguage($this->article->cover),
             /** Markdown. */
             'body' => $this->body,
+            /**
+             * The body as HTML, sanitized on the server (App\Support\Markdown): no
+             * script, style, iframe, form or event handler, and only http, https and
+             * mailto links. The same HTML the admin preview shows.
+             */
+            'body_html' => Markdown::toHtml($this->body)->toHtml(),
             'seo' => [
                 'title' => $this->seo_title ?? $this->title,
                 'description' => $this->seo_description ?? $this->summary,

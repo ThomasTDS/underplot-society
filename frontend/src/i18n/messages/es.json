@@ -24,9 +24,27 @@
   "skipLink": "Saltar al contenido",
   "nav": {
     "label": "Principal",
-    "home": "Inicio"
+    "home": "Inicio",
+    "articles": "Artículos"
   },
   "language": {
     "label": "Idioma"
+  },
+  "articles": {
+    "heading": "Artículos",
+    "latest": "Artículos recientes",
+    "all": "Todos los artículos",
+    "filterLabel": "Filtrar por área",
+    "allAreas": "Todas las áreas",
+    "empty": "Todavía no hay artículos aquí.",
+    "unavailable": "Los artículos no están disponibles ahora. Inténtalo de nuevo en unos minutos.",
+    "loading": "Cargando artículos…",
+    "loadingArticle": "Cargando artículo…",
+    "area": "Área",
+    "published": "Publicado el",
+    "pagination": "Páginas",
+    "previous": "Página anterior",
+    "next": "Página siguiente",
+    "pageOf": "Página {page} de {total}"
   }
 }

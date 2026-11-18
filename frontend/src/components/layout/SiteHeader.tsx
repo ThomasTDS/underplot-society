@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { Locale } from "@/i18n/config";
 import type { Messages } from "@/i18n/dictionaries";
-import { LanguageSwitcher } from "./LanguageSwitcher";
-import { MainNav } from "./MainNav";
+import { Suspense } from "react";
+import { LanguageLinks, LanguageSwitcher } from "./LanguageSwitcher";
+import { MainNav, MainNavLinks } from "./MainNav";
 import styles from "./SiteHeader.module.css";
 
 export function SiteHeader({ lang, messages }: { lang: Locale; messages: Messages }) {
@@ -14,8 +15,14 @@ export function SiteHeader({ lang, messages }: { lang: Locale; messages: Message
           Underplot Society
         </Link>
         <div className={styles.navs}>
-          <MainNav lang={lang} labels={messages.nav} />
-          <LanguageSwitcher current={lang} label={messages.language.label} />
+          {/* Pages rendered at request time know their address only then; until it streams
+              in, the same links show without the current-page marks. */}
+          <Suspense fallback={<MainNavLinks lang={lang} labels={messages.nav} pathname={null} />}>
+            <MainNav lang={lang} labels={messages.nav} />
+          </Suspense>
+          <Suspense fallback={<LanguageLinks current={lang} label={messages.language.label} pathname={null} />}>
+            <LanguageSwitcher current={lang} label={messages.language.label} />
+          </Suspense>
         </div>
       </div>
     </header>
