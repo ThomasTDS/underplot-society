@@ -22,6 +22,10 @@ The site is expected at `http://127.0.0.1:3000` and the API at `http://127.0.0.1
 
 `npm test` runs two Playwright projects: `api` (HTTP only, no browser) and `chromium` (browser).
 
+Before the tests, `global-setup.ts` seeds content in the local stack through `docker compose exec`: the sample articles, an article made of script attempts (XSS probe) and one published in English and Portuguese only (language fallback). Seeding is safe to repeat. Set `E2E_SEED=0` when the tests point at another environment.
+
+The local stack raises the API's per-visitor limit (`API_RATE_LIMIT`, 1000 a minute): without the proxy header used on staging, every page the frontend renders counts as the same visitor, and the suite goes past 60 a minute.
+
 ### Tests that need the database down
 
 Tests tagged `@db-down` are skipped by `npm test`. Run them with:
@@ -36,13 +40,13 @@ The script stops the `db` container, runs only the `@db-down` tests, and starts 
 
 | Path | Contents |
 |---|---|
-| `tests/ui/` | Browser tests (`*.spec.ts`). They describe behaviour and never use selectors directly. |
+| `tests/ui/` | Browser tests (`*.spec.ts`). They describe behaviour. CSS selectors appear only where the markup itself is what is checked (no `<script>` in an article, a `noindex` meta tag). |
 | `tests/api/` | API tests, using Playwright's request context. |
 | `pages/` | Page objects: one class per page, holding its locators and actions. |
 | `api/` | API clients: the request-level counterpart of page objects (`HealthApi`). |
 | `support/` | Shared helpers. `locales.ts` reads the site's own message files, so tests check the real texts in every language. |
 | `scripts/run-db-down.mjs` | Stops and restarts the database around the `@db-down` tests. |
-| `global-setup.ts` | Runs once before the tests and stops with a clear message if the site or the API is not reachable. |
+| `global-setup.ts` | Runs once before the tests: stops with a clear message if the site or the API is not reachable, then seeds the test content. |
 
 Locators prefer what a reader perceives: roles and accessible names (`getByRole('region', { name: 'System status' })`). The API status uses its `data-status` attribute, the machine-readable value behind the visible text.
 

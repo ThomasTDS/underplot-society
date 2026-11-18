@@ -33,14 +33,14 @@ export default async function globalSetup() {
 }
 
 /**
- * Sample articles and the XSS probe, in the local Docker stack. Safe to run again.
+ * Sample articles and the test probes (XSS, partial translation), in the local Docker stack. Safe to run again.
  * Skipped for the database-down run, and with E2E_SEED=0 (for example, when the
  * tests point at another environment).
  */
 function seedContent() {
   if (process.env.E2E_DB_DOWN === "1" || process.env.E2E_SEED === "0") return;
 
-  for (const seeder of ["SampleContentSeeder", "XssProbeSeeder"]) {
+  for (const seeder of ["SampleContentSeeder", "XssProbeSeeder", "PartialTranslationSeeder"]) {
     execFileSync(
       "docker",
       ["compose", "exec", "-T", "backend", "php", "artisan", "db:seed", `--class=${seeder}`, "--force", "--no-interaction"],

@@ -29,6 +29,8 @@ A request without a locale prefix (for example `/` or `/about`) is redirected by
 2. otherwise to the best match for the browser's `Accept-Language`, in the reader's order of preference: any Portuguese variant goes to `pt-br`, any Spanish variant to `es`, English to `en`;
 3. otherwise to `en`.
 
+Playwright checks this against the running site with a matrix of `Accept-Language` values, with and without the cookie (`e2e/tests/ui/locale-detection.spec.ts`).
+
 These redirects are temporary (`307`) and sent with `Vary: Accept-Language, Cookie`. A locale in the wrong case, such as `/PT-BR`, gets a permanent redirect (`308`) to the lower-case form.
 
 Texts live in `src/i18n/messages/{en,pt-br,es}.json`. English is the reference: a test fails if another language is missing a key or has an empty text.
@@ -103,7 +105,7 @@ The header and footer wrap instead of collapsing into a menu, so every control s
 |---|---|---|
 | Home | `/{lang}` | The 3 latest articles |
 | List | `/{lang}/articles` | Area filter (`?area=`) and pages (`?page=`), both plain links |
-| Article | `/{lang}/articles/{slug}` | The language switcher goes to the article's own slug in each language |
+| Article | `/{lang}/articles/{slug}` | The language switcher goes to the article's own slug in each language. A language the article is not published in goes to that language's list, which says why (`?unavailable=article`) |
 
 Content comes from the API at request time ([`src/lib/content-api.ts`](src/lib/content-api.ts), server only). Every response is checked against the expected shape; anything else shows "unavailable" instead of the content. A cover image only gets an `http(s)` address.
 

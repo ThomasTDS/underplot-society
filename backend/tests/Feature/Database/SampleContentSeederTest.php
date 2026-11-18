@@ -3,6 +3,7 @@
 namespace Tests\Feature\Database;
 
 use App\Models\ArticleTranslation;
+use Database\Seeders\PartialTranslationSeeder;
 use Database\Seeders\SampleContentSeeder;
 use Database\Seeders\XssProbeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -35,5 +36,15 @@ class SampleContentSeederTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/<(script|svg|iframe|details)\b/i', $html);
         $this->assertDoesNotMatchRegularExpression('/\s(href|src)="?\s*javascript/i', $html);
         $this->assertDoesNotMatchRegularExpression('/<[^>]+\son\w+=/i', $html);
+    }
+
+    public function test_the_partial_probe_is_visible_in_english_and_portuguese_only(): void
+    {
+        $this->seed([SampleContentSeeder::class, PartialTranslationSeeder::class, PartialTranslationSeeder::class]);
+
+        $this->getJson('/api/v1/en/articles/partial-probe')
+            ->assertOk()
+            ->assertJsonPath('data.translations', ['en' => 'partial-probe', 'pt-br' => 'sonda-parcial']);
+        $this->getJson('/api/v1/es/articles/sonda-parcial-es')->assertNotFound();
     }
 }

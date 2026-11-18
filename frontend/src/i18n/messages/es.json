@@ -45,6 +45,7 @@
     "pagination": "Páginas",
     "previous": "Página anterior",
     "next": "Página siguiente",
-    "pageOf": "Página {page} de {total}"
+    "pageOf": "Página {page} de {total}",
+    "notInLanguage": "Este artículo no está disponible en español. Aquí están los demás artículos."
   }
 }

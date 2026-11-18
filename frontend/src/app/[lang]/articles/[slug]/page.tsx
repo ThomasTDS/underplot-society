@@ -4,7 +4,8 @@ import { ArticleMeta } from "@/components/articles/ArticleCard";
 import { ArticlesUnavailable } from "@/components/articles/ArticleList";
 import { LanguageAlternates } from "@/components/articles/LanguageAlternates";
 import styles from "@/components/articles/articles.module.css";
-import { isLocale, locales, type Locale } from "@/i18n/config";
+import { articleAlternates } from "@/i18n/article-alternates";
+import { isLocale, type Locale } from "@/i18n/config";
 import { getMessages, type Messages } from "@/i18n/dictionaries";
 import { getArticle } from "@/lib/content-api";
 
@@ -28,13 +29,7 @@ async function ArticleContent({ lang, slug, labels }: { lang: Locale; slug: stri
   }
 
   const article = result.data;
-  // A language without this article goes to that language's article list.
-  const alternates = Object.fromEntries(
-    locales.map((locale) => {
-      const translated = article.translations[locale];
-      return [locale, translated ? `/${locale}/articles/${translated}` : `/${locale}/articles`];
-    }),
-  );
+  const alternates = articleAlternates(article.translations);
 
   return (
     <article className={styles.article}>
