@@ -1,0 +1,98 @@
+/*
+ * Design tokens, from the brand identity (Obsidian #111116, Royal Purple #5426A5,
+ * Ancient Gold #D9A441, Ivory #F5F3F7), adjusted so every pairing meets WCAG AA.
+ * Components use these variables only, never literal colors.
+ *
+ * The dark theme is the default. The light theme applies with data-theme="light"
+ * on <html>. tokens.test.ts checks every text and component pairing in both themes,
+ * so a color change that breaks contrast fails CI.
+ *
+ * Where the brand colors fall short:
+ * - Royal Purple on Obsidian is 1.97:1. The dark theme uses a lighter purple for
+ *   links and focus, and a mid purple for buttons.
+ * - Ancient Gold on Ivory is 2.04:1. The light theme darkens gold for text and keeps
+ *   the original for decoration only.
+ * - Link and body text colors are close, so links are always underlined.
+ */
+
+:root {
+  /* Surfaces */
+  --color-bg: #111116;
+  --color-surface: #1b1a22;
+  --color-raised: #25232e;
+
+  /* Text */
+  --color-text: #f5f3f7;
+  --color-text-muted: #ada7b8;
+  --color-link: #ae8fe5;
+  --color-accent: #d9a441;
+
+  /* Components */
+  --color-button: #743ed3;
+  --color-button-text: #f5f3f7;
+  --color-border: #757087;
+  --color-focus: #ae8fe5;
+
+  /* Status */
+  --color-success: #3fb27f;
+  --color-danger: #ec6a6e;
+
+  /* Decorative only: no contrast requirement, never for text or component edges */
+  --color-divider: #2c2a36;
+  --color-accent-decorative: #d9a441;
+
+  /* Type: self-hosted variable fonts (see src/styles/fonts.ts) */
+  --font-display: var(--font-space-grotesk), "Segoe UI", system-ui, sans-serif;
+  --font-text: var(--font-inter), "Segoe UI", system-ui, sans-serif;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: clamp(2.25rem, 5vw, 3rem);
+  --leading-tight: 1.2;
+  --leading-body: 1.65;
+  --measure: 68ch;
+
+  /* Space, on a 4px grid */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Shape */
+  --radius-sm: 0.375rem;
+  --radius: 0.625rem;
+  --focus-ring: 3px solid var(--color-focus);
+  --focus-offset: 2px;
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --color-bg: #f5f3f7;
+  --color-surface: #ffffff;
+  --color-raised: #ffffff;
+
+  --color-text: #111116;
+  --color-text-muted: #5e586a;
+  --color-link: #5426a5;
+  --color-accent: #8f661b;
+
+  --color-button: #5426a5;
+  --color-button-text: #f5f3f7;
+  --color-border: #8e879b;
+  --color-focus: #5426a5;
+
+  --color-success: #1a7347;
+  --color-danger: #c62d33;
+
+  --color-divider: #e2dee8;
+  --color-accent-decorative: #d9a441;
+
+  color-scheme: light;
+}

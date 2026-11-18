@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { htmlLang, locales } from "@/i18n/config";
 import { getMessages } from "@/i18n/dictionaries";
+import { fontVariables } from "@/styles/fonts";
 import "./globals.css";
 import styles from "./global-not-found.module.css";
 
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
  */
 export default function GlobalNotFound() {
   return (
-    <html lang="en">
+    <html lang="en" className={fontVariables}>
       <body>
         <main className={styles.main}>
           <h1 className={styles.code}>404</h1>

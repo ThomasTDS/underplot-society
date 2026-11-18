@@ -47,6 +47,32 @@ The home page checks `GET /api/health` on every request and shows the result in 
 
 The rest of the page is prerendered; only the status is rendered at request time.
 
+## Design tokens
+
+Colors, type, spacing and shape are CSS variables in [`src/styles/tokens.css`](src/styles/tokens.css). Components use the variables only. A test fails on any literal color (`#…`, `rgb()`, `hsl()`) in another stylesheet.
+
+| Theme | When | Notes |
+|---|---|---|
+| Dark | Default | The brand's own look: Obsidian background, Ivory text, gold accents |
+| Light | `data-theme="light"` on `<html>` | Ivory background, Obsidian text, Royal Purple links |
+
+The palette starts from the brand colors and adjusts them where they fall short of WCAG AA:
+- Royal Purple on Obsidian is 1.97:1, so the dark theme uses a lighter purple for links and focus, and a mid purple for buttons.
+- Ancient Gold on Ivory is 2.04:1, so the light theme uses a darker gold for text.
+- Links are always underlined, because their color is close to the body text.
+
+[`tokens.test.ts`](src/styles/tokens.test.ts) reads `tokens.css` and checks every pairing in both themes:
+
+| Pairing | Minimum ratio |
+|---|---|
+| Text, secondary text, links, accent and status colors on the background and on both surfaces | 4.5:1 |
+| Button text on the button | 4.5:1 |
+| Borders, the focus indicator, and the button against the page | 3:1 |
+
+A color change that breaks one of these pairings fails CI.
+
+Fonts are Space Grotesk (headings) and Inter (text), served from the site itself through `next/font/local` from the Fontsource packages (OFL-1.1). No request goes to Google or any other host. The Latin subset covers English, Portuguese and Spanish.
+
 ## Quality checks
 
 ```sh
