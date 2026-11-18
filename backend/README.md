@@ -127,6 +127,20 @@ If the authenticator app and the recovery codes are both lost, clear the secret 
 
 The panel's CSS, JavaScript and fonts are published to `public/` by `php artisan filament:assets`, which runs after `composer install` and during the image build. They are not committed.
 
+## Images
+
+Images are uploaded under **Images** in the admin panel and chosen as an article's cover. The rules live in `App\Media\MediaLibrary`, so they hold for anything that stores images, not only the panel:
+
+| Rule | Why |
+|---|---|
+| JPEG, PNG or WebP only, recognised by the file's content (`finfo` and `getimagesize` must agree), never by its name or by the type the browser sends | A script, an HTML page or an SVG renamed `.jpg` is refused. SVG can carry scripts, so it is not accepted at all. |
+| At most 5 MB and 16 megapixels, checked before decoding | Decoding a huge image would exhaust the server's memory |
+| Decoded and encoded again as WebP, at most 2400 pixels wide | Only the pixels survive. Metadata such as the camera's GPS position, and anything hidden in or appended to the file, are dropped. |
+| Stored as `media/<random id>.webp` | The uploaded name is never used in a path |
+| Alternative text required in English, Portuguese and Spanish, up to 300 characters | Accessibility; an image without it in a language is not shown in that language |
+
+Files are stored on the `public` disk (`storage/app/public`, served at `/storage`). In Docker that directory is the `media` volume, so images survive deploys. Deleting an image deletes its file, and articles that used it as a cover keep going without one.
+
 ## Database timeouts
 
 | Variable | Default | Effect |

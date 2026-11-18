@@ -19,7 +19,7 @@ The server opens **no** HTTP or HTTPS port. `cloudflared` connects out to Cloudf
 | [`server/harden.sh`](server/harden.sh) | Updates the system, enables automatic security updates (with reboot at 06:30), adds 2 GB of swap, and restricts SSH to key login for the admin user and the restricted `deploy` user, no root |
 | [`server/install-docker.sh`](server/install-docker.sh) | Installs Docker Engine and Compose from Docker's repository, with [`daemon.json`](server/daemon.json): rotated logs, containers survive daemon restarts, no privilege escalation |
 | [`tunnel/compose.yaml`](tunnel/compose.yaml) | The `cloudflared` container: read-only, no Linux capabilities, 128 MB limit, image pinned by digest, health check |
-| [`staging/compose.yaml`](staging/compose.yaml) | The site: PostgreSQL, migrations, API and frontend, from the published images, with memory limits sized for a 1 GB server. The database has no published port. |
+| [`staging/compose.yaml`](staging/compose.yaml) | The site: PostgreSQL, migrations, API and frontend, from the published images, with memory limits sized for a 1 GB server. The database has no published port. Uploaded images live in the `media` volume. |
 | [`staging/deploy.sh`](staging/deploy.sh) | Deploys one image tag: pulls, migrates, restarts and waits until every service is healthy |
 | [`staging/backup.sh`](staging/backup.sh) | Daily encrypted database backup to a private Git repository, run by [`underplot-backup.timer`](staging/underplot-backup.timer) |
 | [`cloudflare/configure.py`](cloudflare/configure.py) | Creates or updates the tunnel and its routes, the DNS records, TLS settings, bot protection and WAF rules, through the Cloudflare API |
@@ -30,7 +30,7 @@ Applied by `configure.py` on every run. The script overwrites drift, so it is th
 
 | Area | Setting |
 |---|---|
-| Tunnel route | `staging.underplotsociety.com.br`: `/api/*` to the API on `127.0.0.1:8000`, everything else to the site on `127.0.0.1:3000`. `staging-admin.underplotsociety.com.br`: everything to the backend, which serves the admin panel at `/admin` (the panel needs several paths: its pages, Livewire and its assets). Any other hostname gets 404. |
+| Tunnel route | `staging.underplotsociety.com.br`: `/api/*` and `/storage/*` (uploaded images) to the backend on `127.0.0.1:8000`, everything else to the site on `127.0.0.1:3000`. `staging-admin.underplotsociety.com.br`: everything to the backend, which serves the admin panel at `/admin` (the panel needs several paths: its pages, Livewire and its assets). Any other hostname gets 404. |
 | DNS | Proxied CNAMEs to the tunnel. The server's IP address is never published. The admin host is `staging-admin`, not `admin.staging`, because Cloudflare's free certificate covers one level of subdomain only. |
 | TLS | Full (strict), minimum TLS 1.2, TLS 1.3 on, HTTP redirected to HTTPS, HSTS for 180 days with `nosniff` |
 | Bots | Bot Fight Mode and JavaScript detections |
@@ -110,6 +110,8 @@ Migrations are not reversed automatically. If a migration breaks an older versio
 
 Every day at about 05:30 (UTC), `underplot-backup.timer` dumps the database with `pg_dump`, encrypts it with [age](https://age-encryption.org/) and pushes it to a private GitHub repository, so a lost server or a lost cloud account does not lose the data. The last 30 days stay in the repository tree; older dumps remain in its history.
 
+The same run mirrors the uploaded images into `staging-media/`. They are not encrypted: they are published on the site anyway. Unencrypted files also let Git store each image once, instead of a new copy every day.
+
 The server holds only the **public** key, so neither the server nor the repository can read a backup. The private key is kept offline by the maintainer; without it the backups cannot be restored.
 
 **Setting up** (once per server, as root):
@@ -131,6 +133,8 @@ The server holds only the **public** key, so neither the server nor the reposito
 ```sh
 age --decrypt --identity backup-age-key.txt staging/<date>.dump.age > underplot.dump
 docker exec -i underplot-db-1 pg_restore --username=underplot --dbname=underplot --clean --if-exists < underplot.dump
+# Images: copy them back into the backend's volume.
+docker cp staging-media/. underplot-backend-1:/app/storage/app/public/media/
 ```
 
 ## Checking it

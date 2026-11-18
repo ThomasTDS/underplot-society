@@ -67,6 +67,9 @@ services:
     <<: *backend
     ports:
       - "127.0.0.1:8000:8000"
+    # Uploaded images outlive the container; backup.sh copies them off the server.
+    volumes:
+      - media:/app/storage/app/public
     mem_limit: 256m
     depends_on:
       db:
@@ -88,3 +91,4 @@ services:
 
 volumes:
   db-data:
+  media:
