@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Locale;
 use App\Enums\PublicationStatus;
+use App\Support\SiteCache;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Database\Factories\ArticleFactory;
@@ -105,5 +106,7 @@ class Article extends Model
     public function unpublish(): void
     {
         $this->translations()->update(['status' => PublicationStatus::Draft]);
+        // A bulk update fires no model events: tell the site directly.
+        app(SiteCache::class)->forgetArticle($this);
     }
 }

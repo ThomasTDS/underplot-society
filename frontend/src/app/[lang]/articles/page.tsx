@@ -7,7 +7,7 @@ import { Pagination } from "@/components/articles/Pagination";
 import styles from "@/components/articles/articles.module.css";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getMessages, type Messages } from "@/i18n/dictionaries";
-import { listAreas, listArticles } from "@/lib/content-api";
+import { loadAreas, loadArticles } from "@/lib/content";
 import { baseMetadata, pageAlternates, samePathInEveryLanguage } from "@/seo/metadata";
 import { getSiteConfig } from "@/seo/site";
 
@@ -73,7 +73,7 @@ async function Articles({
   }
   const page = pageParam ? Number(pageParam) : 1;
 
-  const [articles, areas] = await Promise.all([listArticles(lang, { area, page }), listAreas(lang)]);
+  const [articles, areas] = await Promise.all([loadArticles(lang, { area, page }), loadAreas(lang)]);
   if (articles.kind === "not-found") notFound();
   if (articles.kind === "error") return <ArticlesUnavailable labels={labels} />;
   if (page > articles.data.lastPage && page > 1) notFound();

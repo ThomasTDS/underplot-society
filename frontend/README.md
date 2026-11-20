@@ -111,7 +111,20 @@ Content comes from the API at request time ([`src/lib/content-api.ts`](src/lib/c
 
 **HTML safety.** Titles, summaries and area names are always rendered as text. The article body is the only HTML on the site, and it arrives sanitized from the API (`body_html`). There, CommonMark first escapes raw HTML and drops unsafe links, then an allow-list sanitizer removes anything outside safe elements and attributes. A Playwright test opens an article full of script attempts in all three languages and checks that none runs.
 
-**Known gap.** An unknown article gets the translated "not found" page, but with status `200` and a `noindex` added by script: the response has already started streaming when the API says 404. A real `404` is part of the rendering strategy work (prerendering and revalidation).
+## Rendering and cache
+
+Each page's shell (header, footer, headings, placeholders) is prerendered at build time. The content streams into it at request time from a cache in the site's server ([`src/lib/content.ts`](src/lib/content.ts)), so most visits never reach the API.
+
+| | |
+|---|---|
+| Tags | Every cached answer is tagged: `content`, `articles:{locale}` (lists), `areas:{locale}` (filter), `article:{locale}:{slug}` (one article, found or not) |
+| On a change | The backend calls `POST /internal/revalidate` with the affected tags, and the next visit reads fresh data. Publishing, editing or unpublishing shows at once, with no deploy |
+| On its own | Entries refresh after 5 minutes (that is what makes scheduled articles appear) and are never served if older than an hour |
+| API down | A failed call is never cached: pages already cached keep showing, others say "unavailable" and try again on the next visit |
+
+`/internal/revalidate` needs `Authorization: Bearer $REVALIDATE_SECRET` (at least 32 characters; without it the endpoint is off). It refuses anything that came through Cloudflare (`CF-Connecting-IP`), and it accepts only the tag shapes above. The proxy skips `/internal/*`.
+
+**Real 404 for unknown articles.** A page cannot change its status once it streams, so the proxy decides first. It asks `/internal/article-exists`, on the server itself and through the same tagged cache. For a missing article it serves the translated not-found page (`/{lang}/missing`) with status `404`. If the check cannot tell (timeout, API down), the page renders as usual. Client-side navigations are left to the page, which shows the same message in place.
 
 ## SEO
 

@@ -14,6 +14,16 @@ return [
     |
     */
 
+    /*
+     * The public site's cache endpoint, told which pages to drop after content
+     * changes (App\Support\SiteCache). Both empty: off, and the site's cache
+     * expires on its own within minutes.
+     */
+    'site' => [
+        'revalidate_url' => env('SITE_REVALIDATE_URL'),
+        'revalidate_secret' => env('REVALIDATE_SECRET'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

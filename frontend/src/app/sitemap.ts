@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { htmlLang, locales, type Locale } from "@/i18n/config";
-import { listArticles, type ArticleSummary } from "@/lib/content-api";
+import type { ArticleSummary } from "@/lib/content-api";
+import { loadArticles } from "@/lib/content";
 import { getSiteConfig } from "@/seo/site";
 
 /** One sitemap per language: /sitemap/en.xml, /sitemap/pt-br.xml, /sitemap/es.xml. */
@@ -35,7 +36,7 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
 async function allArticles(locale: Locale): Promise<ArticleSummary[]> {
   const articles: ArticleSummary[] = [];
   for (let page = 1; page <= MAX_PAGES; page++) {
-    const result = await listArticles(locale, { page, perPage: 50 });
+    const result = await loadArticles(locale, { page, perPage: 50 });
     if (result.kind !== "ok") break;
     articles.push(...result.data.items);
     if (page >= result.data.lastPage) break;
