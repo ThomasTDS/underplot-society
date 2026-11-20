@@ -16,6 +16,18 @@ On every main page (home, article list, filtered list, article, not found), in E
 | 2.4.7 Focus visible | Every Tab stop on the home page shows an outline of at least 2 px |
 | 2.3.3 Animation from interactions | With reduced motion requested, nothing animates or transitions |
 
+### axe
+
+[`e2e/tests/ui/axe.spec.ts`](../e2e/tests/ui/axe.spec.ts) runs axe (WCAG 2.0, 2.1 and 2.2 A and AA rules, plus best practices) in a real browser on:
+- every main page in all three languages, plus the language fallback notice and the page-not-found screen;
+- both themes;
+- phone and desktop widths.
+
+It runs on every PR:
+- A **serious or critical** violation fails the test.
+- Minor and moderate ones are attached to the report and listed as annotations, to fix without blocking a merge.
+- Text whose contrast axe could not work out also fails, so contrast is never passed unchecked.
+
 Elsewhere:
 
 | Criterion | Where |
