@@ -231,12 +231,14 @@ class ArticlesApiTest extends TestCase
     public function test_the_article_carries_its_body_as_sanitized_html(): void
     {
         $this->translation('hostile', attributes: [
-            'body' => "## Heading\n\n<script>alert(1)</script>\n\n<img src=x onerror=alert(1)>\n\n[click](javascript:alert(1)) and [safe](https://example.com)",
+            'body' => "# Heading\n\n<script>alert(1)</script>\n\n<img src=x onerror=alert(1)>\n\n[click](javascript:alert(1)) and [safe](https://example.com)",
         ]);
 
         $html = $this->getJson('/api/v1/en/articles/hostile')->assertOk()->json('data.body_html');
 
+        // The article title is the page's h1, so the body's headings start at h2.
         $this->assertStringContainsString('<h2>Heading</h2>', $html);
+        $this->assertStringNotContainsString('<h1', $html);
         $this->assertStringContainsString('href="https://example.com"', $html);
         foreach (['<script', '<img', 'javascript:'] as $forbidden) {
             $this->assertStringNotContainsStringIgnoringCase($forbidden, $html);

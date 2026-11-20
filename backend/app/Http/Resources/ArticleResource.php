@@ -34,9 +34,9 @@ class ArticleResource extends JsonResource
             /**
              * The body as HTML, sanitized on the server (App\Support\Markdown): no
              * script, style, iframe, form or event handler, and only http, https and
-             * mailto links. The same HTML the admin preview shows.
+             * mailto links. Headings start at h2: the article title is the page's h1.
              */
-            'body_html' => Markdown::toHtml($this->body)->toHtml(),
+            'body_html' => Markdown::toHtml($this->body, topHeading: 2)->toHtml(),
             'seo' => [
                 'title' => $this->seo_title ?? $this->title,
                 'description' => $this->seo_description ?? $this->summary,

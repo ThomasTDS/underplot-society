@@ -389,7 +389,7 @@
                     },
                     "body_html": {
                         "type": "string",
-                        "description": "The body as HTML, sanitized on the server (App\\Support\\Markdown): no\nscript, style, iframe, form or event handler, and only http, https and\nmailto links. The same HTML the admin preview shows."
+                        "description": "The body as HTML, sanitized on the server (App\\Support\\Markdown): no\nscript, style, iframe, form or event handler, and only http, https and\nmailto links. Headings start at h2: the article title is the page's h1."
                     },
                     "seo": {
                         "type": "object",

@@ -22,7 +22,14 @@ final class Markdown
 {
     private static ?HtmlSanitizer $sanitizer = null;
 
-    public static function toHtml(string $markdown): HtmlString
+    /**
+     * @param  int  $topHeading  the highest heading level the text may use. The public
+     *                           article page passes 2, so its title stays the only h1:
+     *                           a text whose highest heading is "# ..." has every
+     *                           heading moved down one level; one that starts at
+     *                           "## ..." is left as written. h6 stays h6.
+     */
+    public static function toHtml(string $markdown, int $topHeading = 1): HtmlString
     {
         $html = Str::markdown($markdown, [
             'html_input' => 'escape',
@@ -30,7 +37,20 @@ final class Markdown
             'max_nesting_level' => 50,
         ]);
 
-        return new HtmlString(self::sanitizer()->sanitize($html));
+        $html = self::sanitizer()->sanitize($html);
+
+        // The sanitizer's output is normalized: plain <hN> and </hN> tags only.
+        preg_match_all('#<h([1-6])>#', $html, $levels);
+        $shift = $levels[1] === [] ? 0 : max(0, $topHeading - min(array_map('intval', $levels[1])));
+        if ($shift > 0) {
+            $html = (string) preg_replace_callback(
+                '#<(/?)h([1-6])>#',
+                fn (array $m) => '<'.$m[1].'h'.min(6, (int) $m[2] + $shift).'>',
+                $html,
+            );
+        }
+
+        return new HtmlString($html);
     }
 
     private static function sanitizer(): HtmlSanitizer

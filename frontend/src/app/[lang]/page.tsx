@@ -39,7 +39,10 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   return (
     <div className={styles.main}>
       <h1 className={styles.title}>Underplot Society</h1>
-      <p className={styles.tagline}>{messages.home.tagline}</p>
+      {/* The motto stays in English in every language; screen readers must say so. */}
+      <p className={styles.tagline} lang={lang === "en" ? undefined : "en"}>
+        {messages.home.tagline}
+      </p>
 
       <section aria-labelledby="latest-articles" className={styles.section}>
         <h2 id="latest-articles" className={styles.heading}>
