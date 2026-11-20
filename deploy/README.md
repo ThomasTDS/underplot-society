@@ -23,6 +23,7 @@ The server opens **no** HTTP or HTTPS port. `cloudflared` connects out to Cloudf
 | [`staging/deploy.sh`](staging/deploy.sh) | Deploys one image tag: pulls, migrates, restarts and waits until every service is healthy |
 | [`staging/backup.sh`](staging/backup.sh) | Daily encrypted database backup to a private Git repository, run by [`underplot-backup.timer`](staging/underplot-backup.timer) |
 | [`cloudflare/configure.py`](cloudflare/configure.py) | Creates or updates the tunnel and its routes, the DNS records, TLS settings, bot protection and WAF rules, through the Cloudflare API |
+| [`cloudflare/check_ai_block.py`](cloudflare/check_ai_block.py) | Checks from outside that AI training crawlers and agents get `403` at the edge, while browsers and search crawlers do not |
 
 ## Cloudflare settings
 
@@ -33,8 +34,8 @@ Applied by `configure.py` on every run. The script overwrites drift, so it is th
 | Tunnel route | `staging.underplotsociety.com.br`: `/api/*` and `/storage/*` (uploaded images) to the backend on `127.0.0.1:8000`, everything else to the site on `127.0.0.1:3000`. `staging-admin.underplotsociety.com.br`: everything to the backend, which serves the admin panel at `/admin` (the panel needs several paths: its pages, Livewire and its assets). Any other hostname gets 404. |
 | DNS | Proxied CNAMEs to the tunnel. The server's IP address is never published. The admin host is `staging-admin`, not `admin.staging`, because Cloudflare's free certificate covers one level of subdomain only. |
 | TLS | Full (strict), minimum TLS 1.2, TLS 1.3 on, HTTP redirected to HTTPS, HSTS for 180 days with `nosniff` |
-| Bots | Bot Fight Mode and JavaScript detections |
-| WAF | Cloudflare Free Managed Ruleset (on by default), plus a custom rule that blocks probes for `/.env`, `/.git`, WordPress and phpMyAdmin paths and similar |
+| Bots | Bot Fight Mode and JavaScript detections. Cloudflare's AI crawler categories: Training and Agent blocked on every page, Search allowed |
+| WAF | Cloudflare Free Managed Ruleset (on by default), plus two custom rules. One blocks probes for `/.env`, `/.git`, WordPress and phpMyAdmin paths and similar. The other blocks the AI training crawlers and agents in [`frontend/src/seo/ai-crawlers.json`](../frontend/src/seo/ai-crawlers.json) by User-Agent, except on `/robots.txt` |
 
 ## Rebuilding the server
 
@@ -153,3 +154,16 @@ curl -m 5 http://<server-ip>/                          # fails: no port open
 
 - Until free Ampere A1 capacity is available, staging runs on the smaller free x86 shape (1 GB of memory). The steps above are the same on both; moving means rebuilding on the new machine and pointing the tunnel at it, with no DNS change.
 - To rotate the tunnel token, reset it in Cloudflare, rerun step 3 and restart the container.
+
+## AI crawlers
+
+The site asks AI training crawlers and AI agents to stay away, and blocks them at the edge. Search crawlers stay allowed, AI search included, so the site can be found and cited with a link.
+
+- **One list:** [`frontend/src/seo/ai-crawlers.json`](../frontend/src/seo/ai-crawlers.json). `robots.txt` (production only; staging disallows everything), the WAF rule and the check all read it.
+- **Two layers at the edge:** Cloudflare's own AI crawler categories, and the WAF rule for crawlers Cloudflare does not classify. One example is `meta-externalagent`, which passed before the rule.
+- **Check:**
+  ```sh
+  python deploy/cloudflare/check_ai_block.py https://staging.underplotsociety.com.br/en
+  ```
+  It exits with an error if any crawler is let in or any browser is blocked. On Windows, if Python reports an expired certificate, the system's CA store is stale: pass `--ca-file` with another bundle, such as Git's `usr/ssl/certs/ca-bundle.crt`.
+- **Limitation:** on the Free plan, both layers match the User-Agent, which anyone can fake. A crawler that pretends to be a browser gets through. Cloudflare's verification of known bots, by IP and signature, is the stronger defence. The check proves the rules are in place and spare legitimate visitors; it cannot prove a disguised crawler is stopped.

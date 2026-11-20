@@ -8,8 +8,11 @@ what is missing and overwriting what drifted.
      else gets 404.
   2. Proxied DNS CNAME for each hostname -> <tunnel id>.cfargotunnel.com.
   3. Zone TLS and HTTPS settings (full strict, TLS 1.2+, HTTPS only, HSTS).
-  4. Bot Fight Mode and JavaScript detections.
-  5. WAF custom rules: block common probes for secrets and admin tools.
+  4. Bot Fight Mode and JavaScript detections; Cloudflare's AI crawler categories:
+     Training and Agent blocked on every page, Search allowed.
+  5. WAF custom rules: block common probes for secrets and admin tools, and the AI
+     training crawlers and agents listed in frontend/src/seo/ai-crawlers.json (the
+     list robots.txt uses), except on /robots.txt itself.
 
 Only the Python standard library is used. Settings come from the environment:
 
@@ -30,6 +33,7 @@ import os
 import sys
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 API = "https://api.cloudflare.com/client/v4"
 
@@ -52,12 +56,39 @@ ZONE_SETTINGS = {
     },
 }
 
+AI_CRAWLERS = json.loads(
+    (Path(__file__).resolve().parents[2] / "frontend" / "src" / "seo" / "ai-crawlers.json").read_text(encoding="utf-8")
+)
+AI_BLOCKED = AI_CRAWLERS["training"] + AI_CRAWLERS["agents"]
+
+# Cloudflare's own AI crawler controls (all plans). On the Free plan they match by user
+# agent; the WAF rule below covers crawlers they miss. "disabled" means not blocked.
+BOT_MANAGEMENT = {
+    "fight_mode": True,
+    "enable_js": True,
+    "ai_training": "block",
+    "ai_user": "block",
+    "ai_search": "disabled",
+    "ai_agents": {name: "block" for name in ("anthropic_agent", "google_agent", "instinct", "muse", "openai_agent")},
+    # robots.txt is the site's own (frontend/src/app/robots.ts), not Cloudflare's.
+    "is_robots_txt_managed": False,
+}
+
 PROBE_PATHS = ["/.env", "/.git", "/.aws", "/wp-", "xmlrpc.php", "phpmyadmin", "/.ds_store", "/server-status"]
 
 WAF_RULES = [
     {
         "description": "Block probes for secrets and admin tools",
         "expression": " or ".join(f'(lower(http.request.uri.path) contains "{p}")' for p in PROBE_PATHS),
+        "action": "block",
+        "enabled": True,
+    },
+    {
+        "description": "Block AI training crawlers and agents (frontend/src/seo/ai-crawlers.json)",
+        # robots.txt stays readable, so a crawler can see it is asked to stay away.
+        "expression": 'http.request.uri.path ne "/robots.txt" and ('
+        + " or ".join(f'(lower(http.user_agent) contains "{name.lower()}")' for name in AI_BLOCKED)
+        + ")",
         "action": "block",
         "enabled": True,
     },
@@ -131,8 +162,8 @@ def ensure_zone_security(cf, zone_id):
         cf.call("PATCH", f"/zones/{zone_id}/settings/{setting}", {"value": value})
     log(f"zone settings: {', '.join(ZONE_SETTINGS)}")
 
-    cf.call("PUT", f"/zones/{zone_id}/bot_management", {"fight_mode": True, "enable_js": True})
-    log("bots: Bot Fight Mode and JavaScript detections on")
+    cf.call("PUT", f"/zones/{zone_id}/bot_management", BOT_MANAGEMENT)
+    log("bots: Bot Fight Mode and JavaScript detections on; AI training and agents blocked, AI search allowed")
 
     # PUT on the phase entrypoint replaces all custom rules, so the list above is the whole truth.
     cf.call("PUT", f"/zones/{zone_id}/rulesets/phases/http_request_firewall_custom/entrypoint",
