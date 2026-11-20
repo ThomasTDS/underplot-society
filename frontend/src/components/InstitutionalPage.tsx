@@ -8,6 +8,7 @@ import { getMessages } from "@/i18n/dictionaries";
 import { formatDate } from "@/i18n/format";
 import { baseMetadata, pageAlternates, samePathInEveryLanguage } from "@/seo/metadata";
 import { getSiteConfig } from "@/seo/site";
+import { PageViewCounter } from "./PageViewCounter";
 import styles from "./InstitutionalPage.module.css";
 
 export async function institutionalMetadata(lang: string, key: InstitutionalPageKey): Promise<Metadata> {
@@ -33,6 +34,7 @@ export function InstitutionalPage({ lang, page: key }: { lang: Locale; page: Ins
 
   return (
     <article className={styles.page} data-page={key}>
+      <PageViewCounter path={`/${lang}${institutionalPath[key]}`} />
       <header className={styles.header}>
         <h1 className={styles.title}>{page.title}</h1>
         <p className={styles.meta}>

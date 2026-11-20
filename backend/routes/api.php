@@ -4,10 +4,14 @@ use App\Enums\Locale;
 use App\Http\Controllers\Api\AreaController;
 use App\Http\Controllers\Api\ArticleController;
 use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\PageViewController;
 use App\Http\Middleware\PruneExpiredCache;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', HealthController::class)->name('health');
+
+// Page views, sent by the site's own server only (see PageViewController).
+Route::post('/internal/page-views', [PageViewController::class, 'store'])->name('internal.page-views');
 
 // Public, read-only content. An unknown language or a malformed slug is a 404
 // before any query runs. Rate limited per visitor (429 over the limit). Responses

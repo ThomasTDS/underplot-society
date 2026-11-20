@@ -161,6 +161,20 @@ The newsletter runs on Substack, and the site only links to it: a section on the
 
 Playwright checks that a visit loads nothing from any other host, and sets no cookie until the reader picks a language by hand ([`e2e/tests/ui/privacy.spec.ts`](../e2e/tests/ui/privacy.spec.ts)).
 
+## Audience metrics
+
+There are no cookies, no script in the browser and no personal data. Each page includes `PageViewCounter`, a server component that renders nothing. When a person opens the page, by a full load or a click inside the site, it tells the API after the response which page it was. The API keeps only a daily total per page.
+
+- **Prefetches are not counted:** a prefetch fetches only the static part of a page, and the counter is request-time content.
+- **Not counted:**
+  - **bots and scripts:** recognised by their User-Agent (`src/lib/page-views.ts`), including headless browsers;
+  - **missing articles:** the counter sits inside the article, which only renders when it exists;
+  - **other paths:** anything outside the site's pages.
+- **Off unless configured:** it needs `API_BASE_URL` and `REVALIDATE_SECRET`, the secret the site shares with the API.
+- **Why not in the proxy:** Next removes the router headers before the proxy runs, so there a click and a prefetch look the same.
+
+The totals are on the admin panel's dashboard.
+
 ## About, Privacy and Accessibility pages
 
 `/{lang}/about`, `/{lang}/privacy` and `/{lang}/accessibility`, the same address in every language. The text lives in code, in `src/content/pages/{en,pt-br,es}.ts`, as plain strings that are never inserted as HTML. A piece can be a link or be marked as another language.

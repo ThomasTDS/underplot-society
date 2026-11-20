@@ -87,6 +87,16 @@ Every `/api/v1` response sets `X-RateLimit-Limit` and `X-RateLimit-Remaining`. `
 
 Successful responses carry an `ETag` and a `Cache-Control` with `public` and `no-cache`. Clients check with the server every time, so a newly published article shows up at once. A client that sends the ETag back in `If-None-Match` gets a `304` with no body while nothing has changed.
 
+## Page views
+
+`POST /api/internal/page-views` with `{"path": "/pt-br/about"}` adds one to that page's total for the day, on Brazil's calendar, in `page_views`. Only the day, the page, its language and the count are stored.
+
+- **Callers:** only the site's server. The request needs `Authorization: Bearer $REVALIDATE_SECRET`, and with `CLIENT_IP_HEADER` set it must not have come through Cloudflare. Anything else gets a `404`.
+- **Pages:** only the site's own pages are accepted (`PageView::PATH`). Anything else gets a `422`.
+- **Documentation:** the route is left out of the OpenAPI document.
+
+The dashboard shows totals for today, 7 days and 30 days, and the most viewed pages (`app/Filament/Widgets`).
+
 ## Site cache
 
 After any change the public site shows, `App\Support\SiteCache` tells the site which cached pages to drop. It sends `POST $SITE_REVALIDATE_URL` with `Authorization: Bearer $REVALIDATE_SECRET`, the same secret the frontend has.
