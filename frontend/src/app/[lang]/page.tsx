@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { ArticleList, ArticlesUnavailable } from "@/components/articles/ArticleList";
+import { NewsletterSection } from "@/components/Newsletter";
 import { ApiStatus, ApiStatusPending, type ApiStatusLabels } from "@/components/ApiStatus";
 import { getApiStatus } from "@/lib/api-status";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -53,6 +54,10 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         </Suspense>
         <Link href={`/${lang}/articles`}>{messages.articles.all}</Link>
       </section>
+
+      <Suspense fallback={null}>
+        <NewsletterSection labels={messages.newsletter} />
+      </Suspense>
 
       <section aria-labelledby="system-status" className={styles.section}>
         <h2 id="system-status" className={styles.heading}>

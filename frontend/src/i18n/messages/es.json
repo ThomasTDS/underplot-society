@@ -47,5 +47,11 @@
     "next": "Página siguiente",
     "pageOf": "Página {page} de {total}",
     "notInLanguage": "Este artículo no está disponible en español. Aquí están los demás artículos."
+  },
+  "newsletter": {
+    "heading": "Boletín",
+    "text": "Nuevos artículos en tu correo, a través de Substack. La suscripción se hace en el sitio de Substack: este sitio nunca ve ni guarda tu dirección de correo.",
+    "cta": "Suscribirse en Substack",
+    "footer": "Boletín (Substack)"
   }
 }

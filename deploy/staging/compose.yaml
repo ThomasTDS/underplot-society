@@ -88,6 +88,8 @@ services:
       API_BASE_URL: http://backend:8000
       SITE_URL: https://staging.underplotsociety.com.br
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
+      # The Substack address, from /etc/underplot/staging.env. Empty: no newsletter link.
+      NEWSLETTER_URL: ${NEWSLETTER_URL:-}
       # No SITE_INDEXING: staging stays out of search engines (robots.txt disallows
       # everything, pages carry noindex and an X-Robots-Tag header).
     ports:

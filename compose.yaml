@@ -94,6 +94,8 @@ services:
       # tests check the real SEO tags. Staging leaves this off.
       SITE_INDEXING: "on"
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-local-stack-revalidate-secret-not-for-servers}
+      # A placeholder, so the end-to-end tests see the newsletter link.
+      NEWSLETTER_URL: ${NEWSLETTER_URL:-https://underplot-example.substack.com}
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
     depends_on:

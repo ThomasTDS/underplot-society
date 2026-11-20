@@ -47,5 +47,11 @@
     "next": "Próxima página",
     "pageOf": "Página {page} de {total}",
     "notInLanguage": "Este artigo não está disponível em português. Veja os outros artigos."
+  },
+  "newsletter": {
+    "heading": "Newsletter",
+    "text": "Novos artigos no seu e-mail, pelo Substack. A inscrição é feita no site do Substack: este site nunca vê nem guarda o seu endereço de e-mail.",
+    "cta": "Assinar no Substack",
+    "footer": "Newsletter (Substack)"
   }
 }
