@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
@@ -8,7 +9,24 @@ import { getApiStatus } from "@/lib/api-status";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getMessages, type Messages } from "@/i18n/dictionaries";
 import { listArticles } from "@/lib/content-api";
+import { baseMetadata, pageAlternates, samePathInEveryLanguage, SITE_NAME } from "@/seo/metadata";
+import { getSiteConfig } from "@/seo/site";
 import styles from "./page.module.css";
+
+export async function generateMetadata({ params }: PageProps<"/[lang]">): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLocale(lang)) return {};
+  const site = await getSiteConfig();
+  const base = baseMetadata(site, lang, getMessages(lang).home.tagline);
+
+  return {
+    ...base,
+    title: { absolute: `${SITE_NAME}: ${getMessages(lang).home.tagline}` },
+    // x-default: "/" picks the reader's language.
+    alternates: pageAlternates(site, `/${lang}`, samePathInEveryLanguage(""), "/"),
+    openGraph: { ...base.openGraph, url: `/${lang}` },
+  };
+}
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;

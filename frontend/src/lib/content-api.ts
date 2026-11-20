@@ -25,6 +25,8 @@ export type Article = ArticleSummary & {
   bodyHtml: string;
   /** Slug in each language the article is published in. */
   translations: Partial<Record<Locale, string>>;
+  seo: { title: string; description: string };
+  updatedAt: string | null;
 };
 
 export type ArticlePage = {
@@ -164,14 +166,19 @@ function parseArticle(value: unknown): Article | null {
   const summary = parseSummary(value);
   if (!summary || !isObj(value)) return null;
   const bodyHtml = str(value.body_html);
-  if (bodyHtml === null || !isObj(value.translations)) return null;
+  if (bodyHtml === null || !isObj(value.translations) || !isObj(value.seo)) return null;
+  const seoTitle = str(value.seo.title);
+  const seoDescription = str(value.seo.description);
+  if (!seoTitle || seoDescription === null) return null;
+  const updatedAt = value.updated_at === null ? null : str(value.updated_at);
+  if (updatedAt === null && value.updated_at !== null) return null;
 
   const translations: Partial<Record<Locale, string>> = {};
   for (const [locale, slug] of Object.entries(value.translations)) {
     if (typeof slug !== "string") return null;
     if (locale === "en" || locale === "pt-br" || locale === "es") translations[locale] = slug;
   }
-  return { ...summary, bodyHtml, translations };
+  return { ...summary, bodyHtml, translations, seo: { title: seoTitle, description: seoDescription }, updatedAt };
 }
 
 function parseArticlePage(body: unknown): ArticlePage | null {
