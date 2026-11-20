@@ -80,7 +80,7 @@ class RateLimitPrivacyTest extends TestCase
         $this->travel(6)->minutes();
         DB::table('cache')->insert(['key' => 'still-valid', 'value' => 'x', 'expiration' => now()->getTimestamp() + 300]);
 
-        $this->getJson('/api/health')->assertOk();
+        $this->visit('198.51.100.1')->assertOk();
 
         $this->assertSame([], array_values(array_intersect($counters, $this->keys())));
         $this->assertContains('still-valid', $this->keys());
@@ -93,12 +93,22 @@ class RateLimitPrivacyTest extends TestCase
 
         // An entry that expired after the last prune, within the same period, waits.
         DB::table('cache')->insert(['key' => 'expired', 'value' => 'x', 'expiration' => now()->getTimestamp() - 1]);
-        $this->getJson('/api/health');
+        $this->visit('198.51.100.1');
         $this->assertContains('expired', $this->keys());
 
         $this->travel(4)->minutes();
-        $this->getJson('/api/health');
+        $this->visit('198.51.100.2');
         $this->assertNotContains('expired', $this->keys());
+    }
+
+    public function test_the_health_check_never_prunes(): void
+    {
+        // It must answer fast even with the database down, so it never touches it here.
+        DB::table('cache')->insert(['key' => 'old', 'value' => 'x', 'expiration' => now()->getTimestamp() - 60]);
+
+        $this->getJson('/api/health')->assertOk();
+
+        $this->assertSame(['old'], $this->keys());
     }
 
     public function test_other_cache_stores_are_left_alone(): void
@@ -106,9 +116,9 @@ class RateLimitPrivacyTest extends TestCase
         config(['cache.default' => 'array']);
         DB::table('cache')->insert(['key' => 'old', 'value' => 'x', 'expiration' => now()->getTimestamp() - 60]);
 
-        $this->getJson('/api/health');
+        $this->visit();
 
-        $this->assertSame(['old'], $this->keys());
+        $this->assertContains('old', $this->keys());
         $this->assertSame(1, PruneExpiredCache::prune());
     }
 
