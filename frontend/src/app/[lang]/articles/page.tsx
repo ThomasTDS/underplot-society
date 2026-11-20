@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { AreaFilter } from "@/components/articles/AreaFilter";
@@ -7,8 +8,38 @@ import styles from "@/components/articles/articles.module.css";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getMessages, type Messages } from "@/i18n/dictionaries";
 import { listAreas, listArticles } from "@/lib/content-api";
+import { baseMetadata, pageAlternates, samePathInEveryLanguage } from "@/seo/metadata";
+import { getSiteConfig } from "@/seo/site";
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export async function generateMetadata({ params, searchParams }: PageProps<"/[lang]/articles">): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLocale(lang)) return {};
+  const site = await getSiteConfig();
+  const labels = getMessages(lang).articles;
+  const base = baseMetadata(site, lang, getMessages(lang).home.tagline);
+
+  // Filtered and later pages are their own canonical pages; the fallback notice is not.
+  const query = await searchParams;
+  const canonicalQuery = new URLSearchParams();
+  if (typeof query.area === "string" && SLUG.test(query.area)) canonicalQuery.set("area", query.area);
+  if (typeof query.page === "string" && /^[1-9]\d{0,3}$/.test(query.page) && query.page !== "1") {
+    canonicalQuery.set("page", query.page);
+  }
+  const qs = canonicalQuery.toString();
+  const canonical = `/${lang}/articles${qs ? `?${qs}` : ""}`;
+
+  return {
+    ...base,
+    title: labels.heading,
+    // Area slugs differ per language, so only the unfiltered list has translations.
+    alternates: qs
+      ? pageAlternates(site, canonical, {}, undefined)
+      : pageAlternates(site, canonical, samePathInEveryLanguage("/articles"), "/articles"),
+    openGraph: { ...base.openGraph, url: canonical, title: labels.heading },
+  };
+}
 
 export default async function ArticlesPage({ params, searchParams }: PageProps<"/[lang]/articles">) {
   const { lang } = await params;

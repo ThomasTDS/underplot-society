@@ -84,6 +84,10 @@ services:
     image: underplot-frontend:local
     environment:
       API_BASE_URL: http://backend:8000
+      SITE_URL: http://127.0.0.1:${FRONTEND_PORT:-3000}
+      # Locally the site behaves as production does (indexable), so the end-to-end
+      # tests check the real SEO tags. Staging leaves this off.
+      SITE_INDEXING: "on"
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
     depends_on:

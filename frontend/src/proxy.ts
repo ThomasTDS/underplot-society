@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isLocale, LOCALE_COOKIE } from "@/i18n/config";
 import { resolveLocale } from "@/i18n/detect";
+import { siteConfigFrom } from "@/seo/config";
 
 /**
  * Send every page request to a locale-prefixed URL.
@@ -15,7 +16,13 @@ export function proxy(request: NextRequest) {
   const firstSegment = pathname.split("/")[1] ?? "";
 
   if (isLocale(firstSegment)) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    // Outside production, also keep pages out of search engines by header, which
+    // works even for a crawler that ignores robots.txt or reads no HTML.
+    if (!siteConfigFrom(process.env).indexable) {
+      response.headers.set("X-Robots-Tag", "noindex, nofollow");
+    }
+    return response;
   }
 
   const url = request.nextUrl.clone();

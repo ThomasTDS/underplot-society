@@ -4,6 +4,8 @@ import { htmlLang, isLocale, locales } from "@/i18n/config";
 import { getMessages } from "@/i18n/dictionaries";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { baseMetadata } from "@/seo/metadata";
+import { getSiteConfig } from "@/seo/site";
 import { fontVariables } from "@/styles/fonts";
 import { ThemeScript } from "@/theme/ThemeScript";
 import "../globals.css";
@@ -19,10 +21,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
     return {};
   }
 
-  return {
-    title: "Underplot Society",
-    description: getMessages(lang).home.tagline,
-  };
+  return baseMetadata(await getSiteConfig(), lang, getMessages(lang).home.tagline);
 }
 
 export default async function RootLayout({ children, params }: LayoutProps<"/[lang]">) {

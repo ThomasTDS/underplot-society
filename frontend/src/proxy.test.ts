@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { getRedirectUrl, unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
 import { NextRequest } from "next/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import nextConfig from "../next.config";
 import { config, proxy } from "./proxy";
 
@@ -56,6 +56,22 @@ describe("proxy", () => {
     const response = proxy(request("//evil.test/path", { "accept-language": "en" }));
 
     expect(new URL(getRedirectUrl(response) ?? "").origin).toBe(ORIGIN);
+  });
+});
+
+describe("proxy and search engines", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("keeps pages out of search engines by header outside production", () => {
+    vi.stubEnv("SITE_URL", "https://staging.underplotsociety.com.br");
+    vi.stubEnv("SITE_INDEXING", "");
+    expect(proxy(request("/en")).headers.get("x-robots-tag")).toBe("noindex, nofollow");
+  });
+
+  it("adds no robots header in production", () => {
+    vi.stubEnv("SITE_URL", "https://underplotsociety.com.br");
+    vi.stubEnv("SITE_INDEXING", "on");
+    expect(proxy(request("/pt-br/articles")).headers.get("x-robots-tag")).toBeNull();
   });
 });
 

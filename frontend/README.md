@@ -113,6 +113,26 @@ Content comes from the API at request time ([`src/lib/content-api.ts`](src/lib/c
 
 **Known gap.** An unknown article gets the translated "not found" page, but with status `200` and a `noindex` added by script: the response has already started streaming when the API says 404. A real `404` is part of the rendering strategy work (prerendering and revalidation).
 
+## SEO
+
+Two environment variables, read at request time (the same image runs on staging and in production):
+
+| Variable | Meaning |
+|---|---|
+| `SITE_URL` | The public origin, e.g. `https://underplotsociety.com.br`. Canonical, hreflang, sitemap and share links are absolute and built from it. |
+| `SITE_INDEXING` | `on` in production only. Anything else, or a missing `SITE_URL`, keeps the site out of search engines. |
+
+| What | Indexable (production) | Not indexable (staging) |
+|---|---|---|
+| `robots.txt` | Allows everything except the fallback notice, and lists `/sitemap/{en,pt-br,es}.xml` | `Disallow: /` |
+| Pages | `index, follow` | `noindex, nofollow`, and an `X-Robots-Tag` header from the proxy |
+
+Every page gets a title, a description, `canonical`, `hreflang` for each language it exists in plus `x-default`, and Open Graph and Twitter card tags. Articles use their SEO title and description from the panel. Each language links to the article's slug in that language, and the cover is the share image. The other pages share `public/og-default.png`, rendered with the site's fonts by `e2e/scripts/og-image.mjs`. A filtered or later page of the list is its own canonical page without hreflang, because area slugs differ per language. The fallback notice points back to the plain list.
+
+Browsers get the metadata streamed. Crawlers get it in `<head>` before the page: Next's list of such bots plus Googlebot (`htmlLimitedBots` in `next.config.ts`), since Google ignores a canonical in `<body>`. Playwright checks this for Googlebot, Bingbot and a link preview.
+
+The local stack runs as production (`SITE_INDEXING=on`), so the end-to-end tests check the real tags. Unit tests cover the staging mode.
+
 ## Quality checks
 
 ```sh
