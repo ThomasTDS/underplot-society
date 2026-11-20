@@ -17,7 +17,8 @@ export const contentTags = {
   article: (locale: Locale, slug: string) => [CONTENT_TAG, `article:${locale}:${slug}`],
 };
 
-const LOCALE = locales.map((l) => l.replace("-", "\-")).join("|");
+// Locale codes are letters and hyphens, which need no escaping outside a character class.
+const LOCALE = locales.join("|");
 const TAG = new RegExp(`^(?:content|(?:articles|areas):(?:${LOCALE})|article:(?:${LOCALE}):[a-z0-9]+(?:-[a-z0-9]+)*)$`);
 
 export function isContentTag(value: unknown): value is string {
