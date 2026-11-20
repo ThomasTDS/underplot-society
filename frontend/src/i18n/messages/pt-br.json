@@ -25,7 +25,8 @@
   "nav": {
     "label": "Principal",
     "home": "Início",
-    "articles": "Artigos"
+    "articles": "Artigos",
+    "about": "Sobre"
   },
   "language": {
     "label": "Idioma"
@@ -53,5 +54,20 @@
     "text": "Novos artigos no seu e-mail, pelo Substack. A inscrição é feita no site do Substack: este site nunca vê nem guarda o seu endereço de e-mail.",
     "cta": "Assinar no Substack",
     "footer": "Newsletter (Substack)"
+  },
+  "footerNav": {
+    "label": "Informações do site",
+    "privacy": "Privacidade",
+    "accessibility": "Acessibilidade"
+  },
+  "pages": {
+    "draft": "Rascunho: este texto ainda está em revisão.",
+    "updated": "Atualizado em {date}"
+  },
+  "error": {
+    "title": "Algo deu errado",
+    "body": "Não foi possível mostrar esta página agora. Tente de novo em instantes.",
+    "retry": "Tentar de novo",
+    "home": "Ir para a página inicial"
   }
 }

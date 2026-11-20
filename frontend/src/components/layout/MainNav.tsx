@@ -19,6 +19,7 @@ export function MainNavLinks({ lang, labels, pathname: rawPathname }: Props & { 
   const links = [
     { href: `/${lang}`, label: labels.home },
     { href: `/${lang}/articles`, label: labels.articles },
+    { href: `/${lang}/about`, label: labels.about },
   ];
 
   // "page" on the page itself; "true" inside its section (an article under Articles).

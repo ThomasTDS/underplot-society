@@ -14,6 +14,10 @@ describe("formatDate", () => {
     expect(formatDate("2026-11-19T01:00:00+00:00", "en")).toBe("November 18, 2026");
   });
 
+  it("keeps a bare date on its own day", () => {
+    expect(formatDate("2026-11-20", "pt-br")).toBe("20 de novembro de 2026");
+  });
+
   it("returns nothing for an invalid date", () => {
     expect(formatDate("not a date", "en")).toBe("");
   });

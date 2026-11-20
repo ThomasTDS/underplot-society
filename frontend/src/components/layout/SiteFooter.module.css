@@ -18,3 +18,19 @@
   color: var(--color-text-muted);
   font-size: var(--text-sm);
 }
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+}
+
+/* Tall enough to tap comfortably (target size, WCAG 2.5.8). */
+.links a {
+  display: inline-block;
+  padding-block: var(--space-1);
+}

@@ -37,6 +37,13 @@ Texts live in `src/i18n/messages/{en,pt-br,es}.json`. English is the reference: 
 
 A URL that matches no page gets a `404` with the message in all three languages, each marked with its own `lang`, since the reader's locale is not known there.
 
+## Errors
+
+- **Inside a page** (`src/app/[lang]/error.tsx`): the message replaces the content, in the URL's language, with the header and footer still usable. Focus moves to the message, and "Try again" fetches the page anew. Nothing about the error is shown to the reader.
+- **When the layout itself fails** (`src/app/global-error.tsx`): a stand-alone page in all three languages, like the `404`.
+
+Both stand-alone pages use the site's design tokens (`src/app/standalone-page.module.css`).
+
 ## API status on the home page
 
 The home page checks `GET /api/health` on every request and shows the result in text:
@@ -153,6 +160,14 @@ The newsletter runs on Substack, and the site only links to it: a section on the
 `NEWSLETTER_URL` (https only) is read at request time. Until it is set, nothing about the newsletter shows. The local stack uses a placeholder.
 
 Playwright checks that a visit loads nothing from any other host, and sets no cookie until the reader picks a language by hand ([`e2e/tests/ui/privacy.spec.ts`](../e2e/tests/ui/privacy.spec.ts)).
+
+## About, Privacy and Accessibility pages
+
+`/{lang}/about`, `/{lang}/privacy` and `/{lang}/accessibility`, the same address in every language. The text lives in code, in `src/content/pages/{en,pt-br,es}.ts`, as plain strings that are never inserted as HTML. A piece can be a link or be marked as another language.
+
+- **Same structure in every language:** a test checks that each language has the same sections, links, date and draft status as English.
+- **Draft notice:** a page marked `draft` says so at the top, until its final text is in.
+- **Privacy text and code agree:** what the Privacy page promises (no third-party requests, a single optional cookie) is what the privacy end-to-end test checks.
 
 ## Quality checks
 

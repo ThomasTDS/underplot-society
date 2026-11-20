@@ -47,7 +47,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
         <main id="content" tabIndex={-1} className={styles.content}>
           {children}
         </main>
-        <SiteFooter messages={messages} />
+        <SiteFooter lang={lang} messages={messages} />
       </body>
     </html>
   );

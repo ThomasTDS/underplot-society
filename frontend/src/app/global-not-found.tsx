@@ -4,7 +4,7 @@ import { getMessages } from "@/i18n/dictionaries";
 import { fontVariables } from "@/styles/fonts";
 import { ThemeScript } from "@/theme/ThemeScript";
 import "./globals.css";
-import styles from "./global-not-found.module.css";
+import styles from "./standalone-page.module.css";
 
 export const metadata: Metadata = {
   title: "404 · Underplot Society",
@@ -23,6 +23,7 @@ export default function GlobalNotFound() {
       </head>
       <body>
         <main className={styles.main}>
+          <p className={styles.brand}>Underplot Society</p>
           <h1 className={styles.code}>404</h1>
           {locales.map((locale) => {
             const messages = getMessages(locale).notFound;
