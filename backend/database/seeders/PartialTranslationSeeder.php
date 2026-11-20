@@ -12,7 +12,7 @@ use Illuminate\Database\Seeder;
 /**
  * For the end-to-end tests only: an article published in English and Portuguese,
  * with the Spanish translation taken back to draft, to test the language fallback
- * notice. Needs SampleContentSeeder first (for the area). Not for staging.
+ * notice, and a body whose headings start at h1. Needs SampleContentSeeder first (for the area). Not for staging.
  */
 class PartialTranslationSeeder extends Seeder
 {
@@ -31,7 +31,8 @@ class PartialTranslationSeeder extends Seeder
                 'slug' => $slug,
                 'title' => "Partial probe ({$locale})",
                 'summary' => 'Published in English and Portuguese only.',
-                'body' => 'Published in English and Portuguese only.',
+                // Starts at "# ...": the page must still have one h1 (see Markdown::toHtml).
+                'body' => "# A section\n\nPublished in English and Portuguese only.\n\n## A subsection\n\nMore text.",
             ]);
         }
         $article->publish(now()->subYears(2));

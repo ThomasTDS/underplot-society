@@ -72,4 +72,30 @@ block
             $this->assertStringContainsString($expected, $html);
         }
     }
+
+    public function test_a_text_that_starts_at_h1_moves_down_for_the_article_page(): void
+    {
+        $markdown = "# One\n\n## Two\n\n###### Six\n\nText with <h1> written in it.";
+
+        $html = Markdown::toHtml($markdown, topHeading: 2)->toHtml();
+
+        $this->assertStringContainsString('<h2>One</h2>', $html);
+        $this->assertStringContainsString('<h3>Two</h3>', $html);
+        $this->assertStringContainsString('<h6>Six</h6>', $html, 'h6 is the lowest level');
+        $this->assertStringNotContainsString('<h1>', $html);
+        $this->assertStringContainsString('&lt;h1&gt;', $html, 'escaped text is left alone');
+    }
+
+    public function test_a_text_that_starts_at_h2_is_left_as_written(): void
+    {
+        $html = Markdown::toHtml("## Two\n\n### Three", topHeading: 2)->toHtml();
+
+        $this->assertStringContainsString('<h2>Two</h2>', $html);
+        $this->assertStringContainsString('<h3>Three</h3>', $html);
+    }
+
+    public function test_the_preview_keeps_the_levels_as_written(): void
+    {
+        $this->assertStringContainsString('<h1>One</h1>', Markdown::toHtml('# One')->toHtml());
+    }
 }
