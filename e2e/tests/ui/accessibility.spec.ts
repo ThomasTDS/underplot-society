@@ -15,6 +15,9 @@ const pages = locales.flatMap((locale) => [
   { name: `filtered list (${locale})`, path: `/${locale}/articles?area=${locale === "en" ? "culture" : "cultura"}` },
   { name: `article (${locale})`, path: `/${locale}/articles/${articleSlug[locale]}` },
   { name: `not found (${locale})`, path: `/${locale}/articles/no-such-article` },
+  { name: `about (${locale})`, path: `/${locale}/about` },
+  { name: `privacy (${locale})`, path: `/${locale}/privacy` },
+  { name: `accessibility (${locale})`, path: `/${locale}/accessibility` },
 ]).concat([
   // Its body starts at "# ...": still one h1 on the page.
   { name: "article whose text starts at h1", path: "/en/articles/partial-probe" },
@@ -72,12 +75,13 @@ for (const { name, path } of pages) {
 
     test("gives every control a target of at least 24 by 24 px (2.5.8)", async ({ page }) => {
       await open(page, path);
-      // Links inside running text are exempt; everything else is checked.
+      // Links inside running text (a paragraph or a list item's sentence) are exempt;
+      // everything else, navigation lists included, is checked.
       const small = await page
         .locator("a, button, input, select, textarea, label:has(input)")
         .evaluateAll((els) =>
           els
-            .filter((el) => !el.closest("p, li > p, [class*='prose']") || el.closest("nav, fieldset"))
+            .filter((el) => !el.closest("p, li, [class*='prose']") || el.closest("nav, fieldset"))
             .filter((el) => !el.matches("input[type=radio]")) // the label is the target
             .map((el) => ({ el, box: el.getBoundingClientRect() }))
             .filter(({ box }) => box.width > 0 && (box.width < 24 || box.height < 24))

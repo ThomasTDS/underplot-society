@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { getInstitutionalPage, institutionalPageKeys, institutionalPath } from "@/content/pages";
 import { htmlLang, locales, type Locale } from "@/i18n/config";
 import type { ArticleSummary } from "@/lib/content-api";
 import { loadArticles } from "@/lib/content";
@@ -24,6 +25,14 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
   const entries: MetadataRoute.Sitemap = [
     { url: absolute(`/${locale}`), alternates: sameEverywhere("") },
     { url: absolute(`/${locale}/articles`), alternates: sameEverywhere("/articles") },
+    ...institutionalPageKeys.map((key) => {
+      const rest = institutionalPath[key];
+      return {
+        url: absolute(`/${locale}${rest}`),
+        lastModified: getInstitutionalPage(locale, key).updated,
+        alternates: sameEverywhere(rest),
+      };
+    }),
   ];
 
   for (const article of await allArticles(locale)) {

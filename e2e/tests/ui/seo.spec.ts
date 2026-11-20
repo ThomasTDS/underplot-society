@@ -77,7 +77,14 @@ for (const locale of locales) {
       expect(response.status()).toBe(200);
       const xml = await response.text();
 
-      for (const path of [`/${locale}`, `/${locale}/articles`, `/${locale}/articles/${articleSlugs[locale]}`]) {
+      for (const path of [
+        `/${locale}`,
+        `/${locale}/articles`,
+        `/${locale}/articles/${articleSlugs[locale]}`,
+        `/${locale}/about`,
+        `/${locale}/privacy`,
+        `/${locale}/accessibility`,
+      ]) {
         expect(xml).toContain(`<loc>${abs(path)}</loc>`);
       }
       // Only this language's pages are listed (others only as alternates).

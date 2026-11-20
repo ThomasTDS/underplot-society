@@ -25,7 +25,8 @@
   "nav": {
     "label": "Principal",
     "home": "Inicio",
-    "articles": "Artículos"
+    "articles": "Artículos",
+    "about": "Acerca de"
   },
   "language": {
     "label": "Idioma"
@@ -53,5 +54,20 @@
     "text": "Nuevos artículos en tu correo, a través de Substack. La suscripción se hace en el sitio de Substack: este sitio nunca ve ni guarda tu dirección de correo.",
     "cta": "Suscribirse en Substack",
     "footer": "Boletín (Substack)"
+  },
+  "footerNav": {
+    "label": "Información del sitio",
+    "privacy": "Privacidad",
+    "accessibility": "Accesibilidad"
+  },
+  "pages": {
+    "draft": "Borrador: este texto todavía está en revisión.",
+    "updated": "Actualizado el {date}"
+  },
+  "error": {
+    "title": "Algo salió mal",
+    "body": "No se pudo mostrar esta página ahora. Inténtalo de nuevo en un momento.",
+    "retry": "Intentar de nuevo",
+    "home": "Ir a la página de inicio"
   }
 }

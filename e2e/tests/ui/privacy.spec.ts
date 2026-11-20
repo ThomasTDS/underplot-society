@@ -6,7 +6,14 @@ import { expect, test } from "@playwright/test";
  * the reader picks a language by hand.
  */
 
-const pages = ["/en", "/pt-br/articles", "/es/articles/ejemplo-leyendo-la-letra-pequena", "/en/articles/no-such-article"];
+const pages = [
+  "/en",
+  "/pt-br/articles",
+  "/es/articles/ejemplo-leyendo-la-letra-pequena",
+  "/en/articles/no-such-article",
+  "/pt-br/privacy",
+  "/no-such-page",
+];
 
 for (const path of pages) {
   test(`${path} loads nothing from other hosts and sets no cookie`, async ({ page, context, baseURL }) => {

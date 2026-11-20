@@ -33,8 +33,13 @@ export async function NewsletterSection({ labels, headingLevel = 2 }: { labels: 
   );
 }
 
+/** An item of the footer's link list. */
 export async function NewsletterFooterLink({ labels }: { labels: Labels }) {
   const url = await newsletterUrl();
   if (!url) return null;
-  return <a href={url}>{labels.footer}</a>;
+  return (
+    <li>
+      <a href={url}>{labels.footer}</a>
+    </li>
+  );
 }

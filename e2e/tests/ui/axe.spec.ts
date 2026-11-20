@@ -27,6 +27,9 @@ const pages = [
     { name: `language fallback (${locale})`, path: `/${locale}/articles?unavailable=article` },
     { name: `article (${locale})`, path: `/${locale}/articles/${articleSlug[locale]}` },
     { name: `article not found (${locale})`, path: `/${locale}/articles/no-such-article` },
+    { name: `about (${locale})`, path: `/${locale}/about` },
+    { name: `privacy (${locale})`, path: `/${locale}/privacy` },
+    { name: `accessibility (${locale})`, path: `/${locale}/accessibility` },
   ]),
   { name: "page not found (all languages)", path: "/no-such-page" },
 ];

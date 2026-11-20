@@ -55,11 +55,12 @@ test.describe("keyboard", () => {
       order.push(await focused(page));
     }
 
-    expect(order.slice(0, 7)).toEqual([
+    expect(order.slice(0, 8)).toEqual([
       `a: ${en.skipLink}`,
       "a: Underplot Society",
       `a: ${en.nav.home}`,
       `a: ${en.nav.articles}`,
+      `a: ${en.nav.about}`,
       "a: English",
       "a: Português",
       "a: Español",
@@ -67,6 +68,12 @@ test.describe("keyboard", () => {
     // Then the page content, and last the theme switcher: the radio group is one
     // Tab stop; arrow keys move inside it (see theme.spec.ts).
     expect(order).toContain(`a: ${en.articles.all}`);
+    // The footer's links come right before the theme switcher.
+    expect(order.slice(-4, -1)).toEqual([
+      `a: ${en.footerNav.privacy}`,
+      `a: ${en.footerNav.accessibility}`,
+      `a: ${en.newsletter.footer}`,
+    ]);
     expect(order.at(-1)).toBe("radio:system:");
     expect(order).not.toContain("body");
   });

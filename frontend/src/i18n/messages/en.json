@@ -25,7 +25,8 @@
   "nav": {
     "label": "Main",
     "home": "Home",
-    "articles": "Articles"
+    "articles": "Articles",
+    "about": "About"
   },
   "language": {
     "label": "Language"
@@ -53,5 +54,20 @@
     "text": "New articles in your inbox, through Substack. You subscribe on Substack's site: this site never sees or stores your email address.",
     "cta": "Subscribe on Substack",
     "footer": "Newsletter (Substack)"
+  },
+  "footerNav": {
+    "label": "Site information",
+    "privacy": "Privacy",
+    "accessibility": "Accessibility"
+  },
+  "pages": {
+    "draft": "Draft: this text is still being reviewed.",
+    "updated": "Last updated on {date}"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "body": "This page could not be shown right now. Try again in a moment.",
+    "retry": "Try again",
+    "home": "Go to the home page"
   }
 }
