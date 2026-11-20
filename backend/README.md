@@ -80,6 +80,11 @@ Only translations with status `published` and a `published_at` that has arrived 
 
 Every `/api/v1` response sets `X-RateLimit-Limit` and `X-RateLimit-Remaining`. `/api/health` is not limited.
 
+**Visitor addresses are not kept:**
+- **Never stored as is:** the per-visitor counter is keyed by an HMAC of the address with `APP_KEY`. A plain hash of an IPv4 address can be reversed by trying them all.
+- **Deleted after expiring:** the database cache never deletes an entry that nobody reads again, so `App\Http\Middleware\PruneExpiredCache` deletes expired entries after the response. It runs on the content API and the admin panel, at most once per `cache.prune_every` seconds (300), on the first request after that. It never runs on `/api/health`, which must answer fast with the database down.
+- **Tested:** `tests/Feature/Api/RateLimitPrivacyTest.php` checks both against the real database cache. The Privacy page relies on them.
+
 Successful responses carry an `ETag` and a `Cache-Control` with `public` and `no-cache`. Clients check with the server every time, so a newly published article shows up at once. A client that sends the ETag back in `If-None-Match` gets a `304` with no body while nothing has changed.
 
 ## Site cache

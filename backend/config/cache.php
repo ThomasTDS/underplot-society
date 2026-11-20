@@ -133,4 +133,11 @@ return [
 
     'serializable_classes' => false,
 
+    /*
+     * Seconds between deletions of expired entries from the database cache
+     * (App\Http\Middleware\PruneExpiredCache). Rate-limit counters, one per visitor,
+     * would otherwise stay in the table forever.
+     */
+    'prune_every' => 300,
+
 ];

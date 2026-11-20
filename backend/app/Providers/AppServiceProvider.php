@@ -47,15 +47,32 @@ class AppServiceProvider extends ServiceProvider
         // Length over composition rules, as current guidance recommends.
         Password::defaults(fn () => Password::min(12)->max(128));
 
-        // Content API: a limit per visitor, and a separate, higher one shared by the
-        // site's own server. Over the limit, the answer is a 429 with Retry-After.
+        self::defineRateLimits();
+    }
+
+    /**
+     * Content API: a limit per visitor, and a separate, higher one shared by the
+     * site's own server. Over the limit, the answer is a 429 with Retry-After.
+     */
+    public static function defineRateLimits(): void
+    {
         RateLimiter::for('content-api', function (Request $request) {
             if (ResolveClientIp::isInternal($request)) {
                 return Limit::perMinute(config()->integer('api.internal_rate_limit'))->by('internal');
             }
 
-            return Limit::perMinute(config()->integer('api.rate_limit'))->by('ip:'.$request->ip());
+            return Limit::perMinute(config()->integer('api.rate_limit'))->by('ip:'.self::visitorKey($request));
         });
+    }
+
+    /**
+     * The visitor's address as the rate limiter stores it: keyed with the app's secret,
+     * so a counter left in the cache cannot be turned back into an address (a plain
+     * hash of an IPv4 address is undone by trying all four billion).
+     */
+    public static function visitorKey(Request $request): string
+    {
+        return hash_hmac('sha256', (string) $request->ip(), (string) config('app.key'));
     }
 
     /**
