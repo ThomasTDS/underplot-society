@@ -146,6 +146,14 @@ Browsers get the metadata streamed. Crawlers get it in `<head>` before the page:
 
 The local stack runs as production (`SITE_INDEXING=on`), so the end-to-end tests check the real tags. Unit tests cover the staging mode.
 
+## Newsletter
+
+The newsletter runs on Substack, and the site only links to it: a section on the home page and a link in the footer. There is no form, so the site never sees an email address. An embedded Substack form would load Substack's scripts and cookies on every page.
+
+`NEWSLETTER_URL` (https only) is read at request time. Until it is set, nothing about the newsletter shows. The local stack uses a placeholder.
+
+Playwright checks that a visit loads nothing from any other host, and sets no cookie until the reader picks a language by hand ([`e2e/tests/ui/privacy.spec.ts`](../e2e/tests/ui/privacy.spec.ts)).
+
 ## Quality checks
 
 ```sh
