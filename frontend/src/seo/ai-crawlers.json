@@ -1,0 +1,40 @@
+{
+  "$comment": "Single list of AI crawlers, used by robots.txt (src/app/robots.ts), the Cloudflare WAF rule (deploy/cloudflare/configure.py) and the edge check (deploy/cloudflare/check_ai_block.py). Names are matched case-insensitively inside the User-Agent header.",
+  "training": [
+    "GPTBot",
+    "ClaudeBot",
+    "anthropic-ai",
+    "CCBot",
+    "Bytespider",
+    "meta-externalagent",
+    "FacebookBot",
+    "Amazonbot",
+    "cohere-ai",
+    "cohere-training-data-crawler",
+    "Diffbot",
+    "AI2Bot",
+    "ImagesiftBot",
+    "PanguBot",
+    "Timpibot",
+    "omgili",
+    "Webzio-Extended",
+    "img2dataset"
+  ],
+  "agents": [
+    "ChatGPT-User",
+    "Claude-User",
+    "Perplexity-User",
+    "MistralAI-User",
+    "meta-externalfetcher"
+  ],
+  "robotsOnly": ["Google-Extended", "Applebot-Extended"],
+  "allowed": [
+    "Googlebot",
+    "Bingbot",
+    "DuckDuckBot",
+    "Applebot",
+    "OAI-SearchBot",
+    "Claude-SearchBot",
+    "PerplexityBot"
+  ]
+}

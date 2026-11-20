@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { BASE_URL } from "../../playwright.config";
+import aiCrawlers from "../../../frontend/src/seo/ai-crawlers.json";
 import { htmlLang, locales, messages } from "../../support/locales";
 
 /**
@@ -114,6 +115,19 @@ test("robots.txt allows crawling and lists one sitemap per language", async ({ r
   for (const locale of locales) {
     expect(text).toContain(`Sitemap: ${abs(`/sitemap/${locale}.xml`)}`);
   }
+});
+
+test("robots.txt asks AI training crawlers and agents to stay away, and lets search crawlers in", async ({ request }) => {
+  const text = await (await request.get("/robots.txt")).text();
+  // Groups are separated by a blank line; find the one each crawler belongs to.
+  const groups = text.split(/\n\s*\n/);
+  const groupOf = (agent: string) => groups.find((g) => new RegExp(`^User-Agent: ${agent}$`, "im").test(g)) ?? "";
+
+  for (const agent of [...aiCrawlers.training, ...aiCrawlers.agents, ...aiCrawlers.robotsOnly]) {
+    expect(groupOf(agent), agent).toMatch(/^Disallow: \/$/m);
+  }
+  for (const agent of aiCrawlers.allowed) expect(groupOf(agent), agent).toBe("");
+  expect(groupOf("\\*")).toMatch(/^Allow: \/$/m);
 });
 
 test("pages carry no robots header in production mode", async ({ request }) => {
