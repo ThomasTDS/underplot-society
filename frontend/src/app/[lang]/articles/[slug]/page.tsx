@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { cache } from "react";
 import { ArticleBody } from "@/components/articles/ArticleBody";
 import { ArticleMeta } from "@/components/articles/ArticleCard";
 import { ArticlesUnavailable } from "@/components/articles/ArticleList";
@@ -9,12 +8,9 @@ import styles from "@/components/articles/articles.module.css";
 import { articleAlternates } from "@/i18n/article-alternates";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getMessages, type Messages } from "@/i18n/dictionaries";
-import { getArticle } from "@/lib/content-api";
+import { loadArticle } from "@/lib/content";
 import { baseMetadata, pageAlternates } from "@/seo/metadata";
 import { getSiteConfig } from "@/seo/site";
-
-// One API call per request, shared by the metadata and the page.
-const loadArticle = cache((lang: Locale, slug: string) => getArticle(lang, slug));
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/articles/[slug]">): Promise<Metadata> {
   const { lang, slug } = await params;

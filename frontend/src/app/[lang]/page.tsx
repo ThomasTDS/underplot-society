@@ -8,7 +8,7 @@ import { ApiStatus, ApiStatusPending, type ApiStatusLabels } from "@/components/
 import { getApiStatus } from "@/lib/api-status";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getMessages, type Messages } from "@/i18n/dictionaries";
-import { listArticles } from "@/lib/content-api";
+import { loadArticles } from "@/lib/content";
 import { baseMetadata, pageAlternates, samePathInEveryLanguage, SITE_NAME } from "@/seo/metadata";
 import { getSiteConfig } from "@/seo/site";
 import styles from "./page.module.css";
@@ -65,7 +65,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 
 async function LatestArticles({ lang, labels }: { lang: Locale; labels: Messages["articles"] }) {
   await connection();
-  const result = await listArticles(lang, { perPage: 3 });
+  const result = await loadArticles(lang, { perPage: 3 });
   if (result.kind !== "ok") return <ArticlesUnavailable labels={labels} />;
 
   return <ArticleList articles={result.data.items} lang={lang} labels={labels} headingLevel={3} />;

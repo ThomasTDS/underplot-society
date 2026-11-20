@@ -82,6 +82,15 @@ Every `/api/v1` response sets `X-RateLimit-Limit` and `X-RateLimit-Remaining`. `
 
 Successful responses carry an `ETag` and a `Cache-Control` with `public` and `no-cache`. Clients check with the server every time, so a newly published article shows up at once. A client that sends the ETag back in `If-None-Match` gets a `304` with no body while nothing has changed.
 
+## Site cache
+
+After any change the public site shows, `App\Support\SiteCache` tells the site which cached pages to drop. It sends `POST $SITE_REVALIDATE_URL` with `Authorization: Bearer $REVALIDATE_SECRET`, the same secret the frontend has.
+
+- An article, or one of its translations, saved, deleted or unpublished: that article's page in every language (also under a slug it just lost), plus every list and area filter.
+- An area, an image or their translations: everything (`content`).
+
+Tags collect during a request and go out in one call after the response is sent, so the panel never waits for the site. A failure is logged, not thrown: the site's cache also refreshes on its own within 5 minutes. Without both settings (secret of at least 32 characters) it is off.
+
 ## Sample content
 
 For staging and the end-to-end tests: three sample articles in two areas, in all three languages. Every title starts with "Sample", "Exemplo" or "Ejemplo", so they are easy to delete before launch. Running the seeder again adds nothing.

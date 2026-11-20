@@ -24,6 +24,8 @@ The site is expected at `http://127.0.0.1:3000` and the API at `http://127.0.0.1
 
 Before the tests, `global-setup.ts` seeds content in the local stack through `docker compose exec`: the sample articles, an article made of script attempts (XSS probe) and one published in English and Portuguese only (language fallback). Seeding is safe to repeat. Set `E2E_SEED=0` when the tests point at another environment.
 
+`publishing.spec.ts` checks the rendering strategy end to end. It creates a draft through the backend's models in `tinker`, as the panel would, then publishes, edits and unpublishes it, and checks that each change shows on the site at once. It also checks that a missing article answers with a real `404`.
+
 The local stack raises the API's per-visitor limit (`API_RATE_LIMIT`, 1000 a minute): without the proxy header used on staging, every page the frontend renders counts as the same visitor, and the suite goes past 60 a minute.
 
 ### Tests that need the database down

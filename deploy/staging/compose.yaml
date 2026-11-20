@@ -33,6 +33,10 @@ x-backend: &backend
     DB_DATABASE: underplot
     DB_USERNAME: underplot
     DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+    # After a change in the panel, tell the site which cached pages to drop. Without
+    # the secret this is off, and the site's cache expires on its own within minutes.
+    SITE_REVALIDATE_URL: http://frontend:3000/internal/revalidate
+    REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
 
 services:
   db:
@@ -83,6 +87,7 @@ services:
     environment:
       API_BASE_URL: http://backend:8000
       SITE_URL: https://staging.underplotsociety.com.br
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
       # No SITE_INDEXING: staging stays out of search engines (robots.txt disallows
       # everything, pages carry noindex and an X-Robots-Tag header).
     ports:

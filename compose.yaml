@@ -32,6 +32,11 @@ x-backend: &backend
     # visitor's limit, and the end-to-end suite goes past 60 a minute. Staging keeps
     # the real limits; the limiter itself is tested in the backend suite.
     API_RATE_LIMIT: ${API_RATE_LIMIT:-1000}
+    # The panel tells the site which cached pages to drop. A fixed value is fine here:
+    # this stack is local or a throwaway CI run, and the endpoint answers only
+    # requests that did not come through Cloudflare.
+    SITE_REVALIDATE_URL: http://frontend:3000/internal/revalidate
+    REVALIDATE_SECRET: ${REVALIDATE_SECRET:-local-stack-revalidate-secret-not-for-servers}
 
 services:
   db:
@@ -88,6 +93,7 @@ services:
       # Locally the site behaves as production does (indexable), so the end-to-end
       # tests check the real SEO tags. Staging leaves this off.
       SITE_INDEXING: "on"
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-local-stack-revalidate-secret-not-for-servers}
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
     depends_on:
