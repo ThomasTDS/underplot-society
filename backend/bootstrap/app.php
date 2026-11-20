@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\PruneExpiredCache;
 use App\Http\Middleware\RemoveServerHeaders;
 use App\Http\Middleware\ResolveClientIp;
 use Illuminate\Foundation\Application;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // First, so everything after it (rate limits, logs) sees the visitor's address.
         $middleware->prepend(ResolveClientIp::class);
         $middleware->append(RemoveServerHeaders::class);
+        $middleware->append(PruneExpiredCache::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Anything under /api answers in JSON, whatever the Accept header or the
