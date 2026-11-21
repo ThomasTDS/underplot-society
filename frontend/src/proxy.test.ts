@@ -130,11 +130,20 @@ describe("proxy and article pages", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1");
   });
 
-  it("leaves client-side navigations to the page", async () => {
+  it("leaves client-side navigations and prefetches to the page", async () => {
     const fetchFn = stubSelf(Response.json({ exists: false }));
-    const response = await proxy(request("/en/articles/gone", { rsc: "1" }));
+    const response = await proxy(request("/en/articles/gone", { "sec-fetch-dest": "empty" }));
     expect(response.headers.get("x-middleware-next")).toBe("1");
     expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["a browser page load", { "sec-fetch-dest": "document" }],
+    ["a crawler or tool without Fetch Metadata", {}],
+  ])("still answers %s for a missing article with a 404", async (_, headers) => {
+    stubSelf(Response.json({ exists: false }));
+    const response = await proxy(request("/en/articles/gone", headers));
+    expect(response.status).toBe(404);
   });
 
   it.each(["/en", "/en/articles", "/en/articles/a/b", "/en/missing"])("does not check %s", async (path) => {
