@@ -23,6 +23,7 @@ The server opens **no** HTTP or HTTPS port. `cloudflared` connects out to Cloudf
 | [`staging/deploy.sh`](staging/deploy.sh) | Deploys one image tag: pulls, migrates, restarts and waits until every service is healthy |
 | [`staging/backup.sh`](staging/backup.sh) | Daily encrypted database backup to a private Git repository, run by [`underplot-backup.timer`](staging/underplot-backup.timer) |
 | [`cloudflare/configure.py`](cloudflare/configure.py) | Creates or updates the tunnel and its routes, the DNS records, TLS settings, bot protection and WAF rules, through the Cloudflare API |
+| [`monitoring/uptimerobot.py`](monitoring/uptimerobot.py) | Creates or updates the external uptime monitors on UptimeRobot (site, API with database, admin panel) |
 | [`cloudflare/check_ai_block.py`](cloudflare/check_ai_block.py) | Checks from outside that AI training crawlers and agents get `403` at the edge, while browsers and search crawlers do not |
 
 ## Cloudflare settings
@@ -185,3 +186,24 @@ The site asks AI training crawlers and AI agents to stay away, and blocks them a
   ```
   It exits with an error if any crawler is let in or any browser is blocked. On Windows, if Python reports an expired certificate, the system's CA store is stale: pass `--ca-file` with another bundle, such as Git's `usr/ssl/certs/ca-bundle.crt`.
 - **Limitation:** on the Free plan, both layers match the User-Agent, which anyone can fake. A crawler that pretends to be a browser gets through. Cloudflare's verification of known bots, by IP and signature, is the stronger defence. The check proves the rules are in place and spare legitimate visitors; it cannot prove a disguised crawler is stopped.
+
+## Uptime monitoring
+
+UptimeRobot (free plan) checks every 5 minutes, from outside, what a visitor sees. Each check goes through Cloudflare, the tunnel, the server and the database:
+
+| Monitor | Fails when |
+|---|---|
+| Site | `/pt-br` does not answer, or the page lacks the site's name |
+| API and database | `/api/health` does not answer `{"status":"ok"}` |
+| Admin panel | the sign-in page does not answer |
+
+**Why not GitHub's runners:** Cloudflare's Bot Fight Mode blocks them, and the Free plan cannot exempt them. UptimeRobot's checker is a verified bot, so it is let through.
+
+Alerts go to the account's alert contacts. The script warns if none is active: an email contact must be confirmed first.
+
+```sh
+export UPTIMEROBOT_API_KEY=...   # the Main API Key, read from a file, not typed into history
+python deploy/monitoring/uptimerobot.py --env staging   --site https://staging.underplotsociety.com.br --admin https://staging-admin.underplotsociety.com.br
+```
+
+The script is idempotent, and it only touches monitors named `Underplot <env>: ...`. On the free plan the API allows 10 calls a minute; the script waits when told to.
