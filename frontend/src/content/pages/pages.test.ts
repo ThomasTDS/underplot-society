@@ -36,9 +36,9 @@ describe.each(institutionalPageKeys)("the %s page", (key) => {
     expect(page.updated).toBe(english.updated);
   });
 
-  it.each(locales)("in %s links only to https addresses and marks only English passages", (locale) => {
+  it.each(locales)("in %s links only to https addresses or the contact mailbox, and marks only English passages", (locale) => {
     for (const piece of pieces(institutionalPages[locale][key])) {
-      if (piece.href) expect(piece.href).toMatch(/^https:\/\//);
+      if (piece.href) expect(piece.href).toMatch(/^(https:\/\/|mailto:contato@underplotsociety\.com\.br$)/);
       if (piece.lang) {
         expect(piece.lang).toBe("en");
         expect(locale).not.toBe("en");

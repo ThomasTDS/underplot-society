@@ -118,7 +118,11 @@ export const pages: InstitutionalPages = {
         heading: "Tus derechos",
         blocks: [
           "Según la LGPD, puedes pedir la confirmación de que tus datos se tratan, y el acceso, la corrección o la eliminación de ellos, entre otros derechos (art. 18). Como el sitio no guarda datos personales de los lectores, en la práctica no hay nada que consultar o borrar aquí. Para borrar la cookie de idioma, basta con borrar las cookies del sitio en el navegador.",
-          "El canal de contacto se publicará aquí antes del lanzamiento del sitio.",
+          [
+            "Para cualquier solicitud sobre tus datos, escribe a ",
+            { text: "contato@underplotsociety.com.br", href: links.contact },
+            ". El mensaje pasa por Cloudflare y llega a un buzón de Google (Gmail), y tu dirección y lo que escribas se usan solo para responder.",
+          ],
         ],
       },
     ],
@@ -168,7 +172,11 @@ export const pages: InstitutionalPages = {
       {
         heading: "¿Encontraste una barrera?",
         blocks: [
-          "Toda barrera comunicada se trata como un defecto que corregir. El canal de contacto se publicará aquí antes del lanzamiento del sitio.",
+          [
+            "Toda barrera comunicada se trata como un defecto que corregir. Escribe a ",
+            { text: "contato@underplotsociety.com.br", href: links.contact },
+            " y cuenta en qué página, con qué navegador y con qué tecnología de apoyo apareció.",
+          ],
         ],
       },
     ],

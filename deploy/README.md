@@ -24,6 +24,7 @@ The server opens **no** HTTP or HTTPS port. `cloudflared` connects out to Cloudf
 | [`app/backup.sh`](app/backup.sh) | Daily encrypted database backup to a private Git repository, run by [`underplot-backup@<environment>.timer`](app/underplot-backup@.timer) |
 | [`cloudflare/configure.py`](cloudflare/configure.py) | Creates or updates the tunnel and its routes, the DNS records, TLS settings, bot protection and WAF rules, through the Cloudflare API |
 | [`monitoring/uptimerobot.py`](monitoring/uptimerobot.py) | Creates or updates the external uptime monitors on UptimeRobot (site, API with database, admin panel) |
+| [`cloudflare/email_routing.py`](cloudflare/email_routing.py) | Receives mail at `contato@` on the domain and forwards it to the project mailbox (Cloudflare Email Routing, free) |
 | [`cloudflare/check_ai_block.py`](cloudflare/check_ai_block.py) | Checks from outside that AI training crawlers and agents get `403` at the edge, while browsers and search crawlers do not |
 
 ## Cloudflare settings
@@ -211,3 +212,19 @@ python deploy/monitoring/uptimerobot.py --env staging \
 ```
 
 The script is idempotent, and it only touches monitors named `Underplot <env>: ...`. On the free plan the API allows 10 calls a minute; the script waits when told to.
+
+## Email
+
+The domain receives mail at one address only, `contato@underplotsociety.com.br`, the contact shown on the Privacy and Accessibility pages. Cloudflare Email Routing (free) forwards it to the project mailbox. Replies are sent from that mailbox, because Email Routing only receives. Nobody can send mail as the domain: DMARC stays at `p=reject`.
+
+```sh
+export CLOUDFLARE_API_TOKEN=...   # also needs Email Routing Addresses (account) and Email Routing Rules (zone)
+python deploy/cloudflare/email_routing.py --zone underplotsociety.com.br --alias contato --to <project mailbox>
+```
+
+The script runs these steps:
+1. It registers the destination mailbox. The first time, Cloudflare emails it a verification link, and forwarding starts once that link is clicked.
+2. It removes the records that refuse mail (the null MX and the `-all` SPF) and enables routing, which adds Cloudflare's MX and SPF records.
+3. It creates the forwarding rule.
+
+Any other address on the domain is rejected.
