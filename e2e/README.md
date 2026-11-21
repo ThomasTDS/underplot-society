@@ -40,6 +40,30 @@ npm run test:db-down
 
 The script stops the `db` container, runs only the `@db-down` tests, and starts the database again afterwards, even if the tests fail. It needs the stack started with Docker Compose.
 
+## Core Web Vitals
+
+```sh
+npm run web-vitals -- https://staging.underplotsociety.com.br
+```
+
+`scripts/web-vitals.mjs` opens the main pages of a running site and fails if any is outside the "good" limits:
+
+| Metric | Limit |
+|---|---|
+| LCP | 2.5 s or less |
+| INP | 200 ms or less |
+| CLS | 0.1 or less |
+
+- **Two profiles:**
+  - a phone, on slow 4G with the CPU slowed 4x, as Lighthouse does for mobile;
+  - a desktop, with no throttling.
+- **Each load is a first visit:** a fresh browser with an empty cache.
+- **Server cache warmed first:** each page is requested once before it is measured, and that first request's time is printed.
+- **INP** comes from real interactions: the theme switch and the keyboard.
+- **Lab numbers:** they come from Chromium, not from real visitors.
+- **Self-test:** `WEB_VITALS_SELF_TEST=1` plants a layout shift and a slow click handler. Every page must then fail, which proves the measurement works.
+- **Git Bash on Windows:** set `MSYS_NO_PATHCONV=1` when passing `WEB_VITALS_PAGES=/pt-br,...`, or Git Bash rewrites the paths.
+
 ## Structure
 
 | Path | Contents |

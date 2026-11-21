@@ -8,6 +8,7 @@
     "test": "playwright test",
     "test:db-down": "node scripts/run-db-down.mjs",
     "report": "playwright show-report",
+    "web-vitals": "node scripts/web-vitals.mjs",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
