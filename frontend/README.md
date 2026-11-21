@@ -161,6 +161,24 @@ The newsletter runs on Substack, and the site only links to it: a section on the
 
 Playwright checks that a visit loads nothing from any other host, and sets no cookie until the reader picks a language by hand ([`e2e/tests/ui/privacy.spec.ts`](../e2e/tests/ui/privacy.spec.ts)).
 
+## Security headers
+
+Every response carries them (`src/security-headers.ts`, applied in `next.config.ts`).
+
+- **Content-Security-Policy:** everything from the site's own origin. No other host, no plugins, no framing, no `<base>` rewriting, no forms posting elsewhere.
+- **Other headers:** `Referrer-Policy: strict-origin-when-cross-origin`, a `Permissions-Policy` that switches off camera, microphone, location and similar features, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and same-origin `Cross-Origin-Opener-Policy` and `Cross-Origin-Resource-Policy`. HSTS is set at Cloudflare.
+
+**Why `'unsafe-inline'` is allowed for scripts and styles:** Next streams page data in inline scripts, and the theme is set by an inline script before the first paint. A nonce would avoid this, but it needs every page rendered per request, and Next documents that as incompatible with Partial Prerendering. Protection against injected script rests on two layers:
+- the backend's article sanitizer, which has two independent layers;
+- React's escaping.
+
+Even so, the policy stops injected code from loading or sending anything to another host.
+
+**Tested by** `e2e/tests/ui/security-headers.spec.ts`:
+- the headers are present on pages, redirects, both kinds of 404, `robots.txt` and the sitemaps;
+- each main page works with no policy violation, including a theme change and a client navigation;
+- a control check proves that a violation would be caught.
+
 ## Audience metrics
 
 There are no cookies, no script in the browser and no personal data. Each page includes `PageViewCounter`, a server component that renders nothing. When a person opens the page, by a full load or a click inside the site, it tells the API after the response which page it was. The API keeps only a daily total per page.
