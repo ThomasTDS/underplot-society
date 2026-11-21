@@ -103,7 +103,12 @@ export const pages: InstitutionalPages = {
         heading: "O que o site não carrega",
         blocks: [
           "Nenhum recurso de outro endereço: as fontes, imagens e scripts vêm do próprio site. Um teste automático confere isso a cada mudança no código.",
-          "Hoje não há métricas de audiência. Se elas forem adotadas, serão sem cookies e sem dados pessoais, e esta página será atualizada antes.",
+        ],
+      },
+      {
+        heading: "Métricas de audiência",
+        blocks: [
+          "Para saber quais textos são lidos, o servidor do site conta quantas vezes cada página é aberta por dia. Só esse total é guardado: nenhum endereço IP, cookie, identificador do navegador ou dado sobre quem leu. Robôs não entram na conta, e nenhum script de métricas roda no seu navegador.",
         ],
       },
       {

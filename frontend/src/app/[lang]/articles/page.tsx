@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { AreaFilter } from "@/components/articles/AreaFilter";
 import { ArticleList, ArticlesUnavailable } from "@/components/articles/ArticleList";
 import { Pagination } from "@/components/articles/Pagination";
+import { PageViewCounter } from "@/components/PageViewCounter";
 import styles from "@/components/articles/articles.module.css";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getMessages, type Messages } from "@/i18n/dictionaries";
@@ -48,6 +49,7 @@ export default async function ArticlesPage({ params, searchParams }: PageProps<"
 
   return (
     <div className={styles.page}>
+      <PageViewCounter path={`/${lang}/articles`} />
       <h1 className={styles.pageTitle}>{labels.heading}</h1>
       <Suspense fallback={<p className={styles.notice}>{labels.loading}</p>}>
         <Articles lang={lang} labels={labels} searchParams={searchParams} />

@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { ArticleList, ArticlesUnavailable } from "@/components/articles/ArticleList";
 import { NewsletterSection } from "@/components/Newsletter";
+import { PageViewCounter } from "@/components/PageViewCounter";
 import { ApiStatus, ApiStatusPending, type ApiStatusLabels } from "@/components/ApiStatus";
 import { getApiStatus } from "@/lib/api-status";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -39,6 +40,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 
   return (
     <div className={styles.main}>
+      <PageViewCounter path={`/${lang}`} />
       <h1 className={styles.title}>Underplot Society</h1>
       {/* The motto stays in English in every language; screen readers must say so. */}
       <p className={styles.tagline} lang={lang === "en" ? undefined : "en"}>

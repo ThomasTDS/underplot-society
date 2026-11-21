@@ -87,7 +87,12 @@ export const pages: InstitutionalPages = {
         heading: "What the site does not load",
         blocks: [
           "Nothing from any other address: fonts, images and scripts all come from the site itself. An automated test checks this on every code change.",
-          "There are no audience metrics today. If they are added, they will be cookieless and free of personal data, and this page will be updated first.",
+        ],
+      },
+      {
+        heading: "Audience metrics",
+        blocks: [
+          "To know which texts are read, the site's server counts how many times each page is opened per day. Only that total is kept: no IP address, cookie, browser identifier or data about who read it. Bots are not counted, and no metrics script runs in your browser.",
         ],
       },
       {

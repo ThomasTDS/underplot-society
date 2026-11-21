@@ -9,6 +9,7 @@ import { articleAlternates } from "@/i18n/article-alternates";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getMessages, type Messages } from "@/i18n/dictionaries";
 import { loadArticle } from "@/lib/content";
+import { PageViewCounter } from "@/components/PageViewCounter";
 import { baseMetadata, pageAlternates } from "@/seo/metadata";
 import { getSiteConfig } from "@/seo/site";
 
@@ -73,6 +74,8 @@ async function ArticleContent({ lang, slug, labels }: { lang: Locale; slug: stri
 
   return (
     <article className={styles.article}>
+      {/* Only an article that exists is counted. */}
+      <PageViewCounter path={`/${lang}/articles/${slug}`} />
       <LanguageAlternates paths={alternates} />
       <h1 className={styles.articleTitle}>{article.title}</h1>
       <ArticleMeta article={article} lang={lang} labels={labels} />
