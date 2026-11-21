@@ -109,7 +109,11 @@ export const pages: InstitutionalPages = {
         heading: "Your rights",
         blocks: [
           "Under the LGPD, you may ask for confirmation that your data is processed, and for access, correction or deletion, among other rights (art. 18). As the site keeps no personal data about readers, there is in practice nothing to look up or delete here. To remove the language cookie, clear the site's cookies in your browser.",
-          "A contact channel will be published here before the site launches.",
+          [
+            "For any request about your data, write to ",
+            { text: "contato@underplotsociety.com.br", href: links.contact },
+            ". The message goes through Cloudflare to a Google (Gmail) mailbox, and your address and what you write are used only to reply.",
+          ],
         ],
       },
     ],
@@ -155,7 +159,11 @@ export const pages: InstitutionalPages = {
       {
         heading: "Found a barrier?",
         blocks: [
-          "Every barrier reported is treated as a defect to fix. A contact channel will be published here before the site launches.",
+          [
+            "Every barrier reported is treated as a defect to fix. Write to ",
+            { text: "contato@underplotsociety.com.br", href: links.contact },
+            " and say on which page, with which browser and with which assistive technology it appeared.",
+          ],
         ],
       },
     ],
