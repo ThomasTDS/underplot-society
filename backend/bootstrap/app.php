@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\RemoveServerHeaders;
 use App\Http\Middleware\ResolveClientIp;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // First, so everything after it (rate limits, logs) sees the visitor's address.
         $middleware->prepend(ResolveClientIp::class);
         $middleware->append(RemoveServerHeaders::class);
+        $middleware->append(SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Anything under /api answers in JSON, whatever the Accept header or the

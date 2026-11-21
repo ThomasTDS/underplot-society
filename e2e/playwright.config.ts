@@ -11,6 +11,7 @@ export const API_URL = process.env.E2E_API_URL ?? "http://127.0.0.1:8000";
  * `npm run test:db-down`, which stops it first and starts it again afterwards.
  */
 const DB_DOWN = /@db-down/;
+const PAGE_VIEWS = /page-views\.spec\.ts/;
 const dbDownRun = process.env.E2E_DB_DOWN === "1";
 
 export default defineConfig({
@@ -32,6 +33,16 @@ export default defineConfig({
           name: "chromium",
           testDir: "./tests/ui",
           grepInvert: DB_DOWN,
+          testIgnore: PAGE_VIEWS,
+          use: { ...devices["Desktop Chrome"], baseURL: BASE_URL },
+        },
+        {
+          // Page view totals move whenever any test opens a page (the browser profile
+          // looks like a person's), so these run alone, after everything else.
+          name: "page-views",
+          testDir: "./tests/ui",
+          testMatch: PAGE_VIEWS,
+          dependencies: ["chromium"],
           use: { ...devices["Desktop Chrome"], baseURL: BASE_URL },
         },
       ],

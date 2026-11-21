@@ -87,6 +87,14 @@ Every `/api/v1` response sets `X-RateLimit-Limit` and `X-RateLimit-Remaining`. `
 
 Successful responses carry an `ETag` and a `Cache-Control` with `public` and `no-cache`. Clients check with the server every time, so a newly published article shows up at once. A client that sends the ETag back in `If-None-Match` gets a `304` with no body while nothing has changed.
 
+## Security headers
+
+`App\Http\Middleware\SecurityHeaders` sets `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options`, `X-Content-Type-Options` and `Cross-Origin-Opener-Policy` on every response. It also sets a Content-Security-Policy that depends on the path:
+- **API** (`/api/*`): JSON only, so the policy allows nothing at all (`default-src 'none'`).
+- **Admin panel:** only the app's own origin. Filament, Livewire and Alpine need inline code and Alpine's evaluated expressions, so `'unsafe-inline'` and `'unsafe-eval'` are allowed for scripts. Without `'unsafe-eval'` the sign-in form stops working; the browser test checks this.
+
+Filament's font is bundled with it. Naming another font in the panel would load it from `fonts.bunny.net`, which the policy blocks; a test guards against that.
+
 ## Page views
 
 `POST /api/internal/page-views` with `{"path": "/pt-br/about"}` adds one to that page's total for the day, on Brazil's calendar, in `page_views`. Only the day, the page, its language and the count are stored.
