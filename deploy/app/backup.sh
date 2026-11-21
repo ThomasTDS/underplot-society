@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 # Encrypted database backup, plus a copy of the uploaded images, pushed to a private
 # Git repository off the server.
-# Runs daily from underplot-backup.timer; can also be run by hand as root:
-#   sudo bash backup.sh
+# Runs daily from underplot-backup@<environment>.timer; can also be run by hand as root:
+#   sudo bash /opt/underplot/<environment>/backup.sh
+# The environment (staging or production) is the name of the folder this script is in;
+# each one keeps its dumps and images in its own folder of the backup repository.
 # The dump is encrypted on the server with age, to a public key whose private half is
 # kept off the server, so neither the server nor the backup repository can read it.
 set -euo pipefail
 
 etc=/etc/underplot
+env_name="$(basename "$(cd "$(dirname "$(readlink -f "$0")")" && pwd)")"
 repo_dir=/var/lib/underplot/backups
 keep_days=30
 : "${BACKUP_REMOTE:?Set BACKUP_REMOTE in $etc/backup.env}"
@@ -18,8 +21,8 @@ git_() { git -C "$repo_dir" -c user.name="Underplot backup" -c user.email="backu
 [ -d "$repo_dir/.git" ] || git clone --quiet "$BACKUP_REMOTE" "$repo_dir"
 git_ pull --quiet --rebase
 
-mkdir -p "$repo_dir/staging"
-file="staging/$(date -u +%F).dump.age"
+mkdir -p "$repo_dir/$env_name"
+file="$env_name/$(date -u +%F).dump.age"
 tmp="$repo_dir/$file.tmp"
 
 # Custom format: compressed, and restorable table by table with pg_restore.
@@ -30,21 +33,21 @@ mv "$tmp" "$repo_dir/$file"
 
 # Drop files older than keep_days from the tree (they stay in the Git history).
 cutoff="$(date -u -d "-$keep_days days" +%F)"
-for f in "$repo_dir"/staging/*.dump.age; do
+for f in "$repo_dir/$env_name"/*.dump.age; do
   day="$(basename "$f" .dump.age)"
-  if [[ "$day" < "$cutoff" ]]; then git_ rm --quiet "staging/$day.dump.age"; fi
+  if [[ "$day" < "$cutoff" ]]; then git_ rm --quiet "$env_name/$day.dump.age"; fi
 done
 
 # Uploaded images, mirrored as plain files: they are published on the site anyway,
 # and unencrypted copies let Git store each image once instead of every day.
-media_dir="$repo_dir/staging-media"
+media_dir="$repo_dir/$env_name-media"
 rm -rf "$media_dir" && mkdir -p "$media_dir"
 if docker exec underplot-backend-1 test -d storage/app/public/media; then
   docker cp underplot-backend-1:/app/storage/app/public/media/. "$media_dir/"
 fi
-git_ add --all staging-media
+git_ add --all "$env_name-media"
 
 git_ add "$file"
-git_ commit --quiet -m "staging backup $(date -u +%FT%TZ)"
+git_ commit --quiet -m "$env_name backup $(date -u +%FT%TZ)"
 git_ push --quiet
 echo "Backed up $file ($(stat -c %s "$repo_dir/$file") bytes)"

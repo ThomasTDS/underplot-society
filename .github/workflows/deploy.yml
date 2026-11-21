@@ -1,7 +1,9 @@
 name: Deploy
 
-# Deploys to staging after the Images workflow publishes a commit that passed CI on main.
-# Run it by hand with an older commit SHA to roll back.
+# Staging: every commit that passed CI on main and had its images published.
+# Production: only by hand (Run workflow), with the commit SHA to release; the
+# production environment asks the maintainer to approve before it runs.
+# Run it by hand with an older SHA to roll back either one.
 on:
   workflow_run:
     workflows: [Images]
@@ -10,20 +12,20 @@ on:
   workflow_dispatch:
     inputs:
       sha:
-        description: Full commit SHA whose images to deploy (rollback or redeploy)
+        description: Full commit SHA whose images to deploy (release, rollback or redeploy)
         required: true
+      environment:
+        description: Where to deploy
+        type: choice
+        options: [staging, production]
+        default: staging
 
 permissions:
   contents: read
 
-# One deploy at a time, and never cancel one halfway.
-concurrency:
-  group: deploy-staging
-  cancel-in-progress: false
-
 jobs:
   deploy:
-    name: Deploy to staging
+    name: Deploy to ${{ inputs.environment || 'staging' }}
     if: >-
       github.event_name == 'workflow_dispatch' || (
         github.event.workflow_run.conclusion == 'success' &&
@@ -31,16 +33,20 @@ jobs:
         github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    # One deploy at a time per environment, and never cancel one halfway.
+    concurrency:
+      group: deploy-${{ inputs.environment || 'staging' }}
+      cancel-in-progress: false
     environment:
-      name: staging
-      url: https://staging.underplotsociety.com.br
+      name: ${{ inputs.environment || 'staging' }}
+      url: ${{ (inputs.environment || 'staging') == 'production' && 'https://underplotsociety.com.br' || 'https://staging.underplotsociety.com.br' }}
     steps:
       - name: Deploy over SSH
         # The key can only run the deploy script with one commit SHA (a forced command on
-        # the server); it opens no shell. Server address and host key are secrets too.
-        # deploy.sh fails unless every container is healthy and /api/health answers "ok"
-        # on the server. Checking through Cloudflare from here is not possible: Bot Fight
-        # Mode blocks requests from GitHub's runners, and the free plan allows no exception.
+        # the server); it opens no shell. Server address and host key are secrets too,
+        # kept in each GitHub environment. deploy.sh fails unless every container is
+        # healthy and /api/health answers "ok" on the server. Checking through Cloudflare
+        # from here is not possible: Bot Fight Mode blocks GitHub's runners.
         run: |
           [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "Not a full commit SHA: $SHA"; exit 1; }
           install -m 700 -d ~/.ssh
@@ -52,6 +58,6 @@ jobs:
             -o ConnectTimeout=20 "deploy@$HOST" "$SHA"
         env:
           SHA: ${{ inputs.sha || github.event.workflow_run.head_sha }}
-          SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
-          KNOWN_HOSTS: ${{ secrets.STAGING_KNOWN_HOSTS }}
-          HOST: ${{ secrets.STAGING_HOST }}
+          SSH_KEY: ${{ (inputs.environment || 'staging') == 'production' && secrets.PRODUCTION_SSH_KEY || secrets.STAGING_SSH_KEY }}
+          KNOWN_HOSTS: ${{ (inputs.environment || 'staging') == 'production' && secrets.PRODUCTION_KNOWN_HOSTS || secrets.STAGING_KNOWN_HOSTS }}
+          HOST: ${{ (inputs.environment || 'staging') == 'production' && secrets.PRODUCTION_HOST || secrets.STAGING_HOST }}

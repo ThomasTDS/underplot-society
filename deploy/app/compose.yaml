@@ -1,6 +1,7 @@
-# Staging stack: the same services as the local compose.yaml, but running the images
-# published by the Images workflow instead of building them. Run through deploy.sh.
-# Variables come from /etc/underplot/staging.env (see staging.env.example).
+# Server stack (staging or production): the same services as the local compose.yaml,
+# but running the images published by the Images workflow instead of building them.
+# Run through deploy.sh, which fetches this file for the commit it deploys.
+# Variables come from /etc/underplot/<environment>.env (see app.env.example).
 name: underplot
 
 x-hardening: &hardening
@@ -25,7 +26,7 @@ x-backend: &backend
     CLIENT_IP_HEADER: CF-Connecting-IP
     # The admin panel answers only on its own host, and its session cookie travels
     # over HTTPS only.
-    ADMIN_DOMAIN: staging-admin.underplotsociety.com.br
+    ADMIN_DOMAIN: ${ADMIN_DOMAIN:?Set ADMIN_DOMAIN}
     SESSION_SECURE_COOKIE: "true"
     DB_CONNECTION: pgsql
     DB_HOST: db
@@ -86,12 +87,13 @@ services:
     image: ghcr.io/thomastds/underplot-frontend:${IMAGE_TAG:?Set IMAGE_TAG}
     environment:
       API_BASE_URL: http://backend:8000
-      SITE_URL: https://staging.underplotsociety.com.br
+      SITE_URL: ${SITE_URL:?Set SITE_URL}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
-      # The Substack address, from /etc/underplot/staging.env. Empty: no newsletter link.
+      # The Substack address. Empty: no newsletter link.
       NEWSLETTER_URL: ${NEWSLETTER_URL:-}
-      # No SITE_INDEXING: staging stays out of search engines (robots.txt disallows
-      # everything, pages carry noindex and an X-Robots-Tag header).
+      # "on" in production only. Anything else keeps the site out of search engines
+      # (robots.txt disallows everything, pages carry noindex and an X-Robots-Tag).
+      SITE_INDEXING: ${SITE_INDEXING:-}
     ports:
       - "127.0.0.1:3000:3000"
     mem_limit: 256m
