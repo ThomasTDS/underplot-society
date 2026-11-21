@@ -1,5 +1,5 @@
 [Unit]
-Description=Daily Underplot staging database backup
+Description=Daily Underplot %i database backup
 
 [Timer]
 # Before the 06:30 automatic-update reboot window.

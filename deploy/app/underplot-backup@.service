@@ -1,0 +1,10 @@
+[Unit]
+# One instance per environment: underplot-backup@staging, underplot-backup@production.
+Description=Underplot %i database backup
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/underplot/backup.env
+ExecStart=/bin/bash /opt/underplot/%i/backup.sh

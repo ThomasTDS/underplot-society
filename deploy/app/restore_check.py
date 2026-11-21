@@ -17,8 +17,8 @@ container, and nothing is written outside a temporary folder.
 Needs Docker and git. Only the Python standard library is used.
 
 Usage:
-  python deploy/staging/restore_check.py --key C:\\Users\\me\\.underplot\\backup-age-key.txt
-  python deploy/staging/restore_check.py --key KEY --repo https://github.com/<owner>/<repo>.git
+  python deploy/app/restore_check.py --key C:\\Users\\me\\.underplot\\backup-age-key.txt [--env production]
+  python deploy/app/restore_check.py --key KEY --repo https://github.com/<owner>/<repo>.git
 """
 import argparse
 import json
@@ -29,7 +29,7 @@ import tempfile
 import time
 from pathlib import Path
 
-POSTGRES_IMAGE = "postgres:18.6-alpine3.24"  # as in deploy/staging/compose.yaml
+POSTGRES_IMAGE = "postgres:18.6-alpine3.24"  # as in deploy/app/compose.yaml
 MIGRATIONS = Path(__file__).resolve().parents[2] / "backend" / "database" / "migrations"
 LOCALES = {"en", "pt-br", "es"}
 REQUIRED_TABLES = {
@@ -57,6 +57,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--key", required=True, help="the age private key (backup-age-key.txt)")
     parser.add_argument("--repo", default="https://github.com/ThomasTDS/underplot-backups.git")
+    parser.add_argument("--env", default="staging", choices=["staging", "production"])
     args = parser.parse_args()
     key = Path(args.key).resolve()
     if not key.is_file():
@@ -72,7 +73,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="underplot-restore-") as tmp:
         backups = Path(tmp) / "backups"
         run("git", "clone", "--quiet", "--depth", "1", args.repo, str(backups))
-        dumps = sorted((backups / "staging").glob("*.dump.age"))
+        dumps = sorted((backups / args.env).glob("*.dump.age"))
         if not dumps:
             raise SystemExit("no dump in the backup repository")
         dump = dumps[-1]
@@ -126,7 +127,7 @@ def main():
             check(not incomplete, f"{len(partial)} published articles, each in all three languages"
                   + (f" (incomplete: {incomplete})" if incomplete else ""))
 
-            mirrored = backups / "staging-media"
+            mirrored = backups / f"{args.env}-media"
             paths = [r[0] for r in sql(container, "select path from media")]
             lost = [p for p in paths if not (mirrored / p.removeprefix("media/")).is_file()]
             check(not lost, f"{len(paths)} images, each with its file in the media mirror"
