@@ -129,6 +129,24 @@ The server holds only the **public** key, so neither the server nor the reposito
    sudo systemctl start underplot-backup.service   # first backup now
    ```
 
+**Checking that a backup restores** (run it before launch, and after any change to the database or the backup):
+
+```sh
+python deploy/staging/restore_check.py --key path/to/backup-age-key.txt
+```
+
+The script works in a throwaway PostgreSQL container, the server's version:
+1. It decrypts the latest dump inside the container and restores it there.
+2. It checks the result:
+   - every table the app needs exists;
+   - every migration is one the code knows;
+   - there is an administrator, and areas and articles to show;
+   - each published article is published in all three languages;
+   - each image has its file in the media mirror.
+3. It removes the container.
+
+It needs only Docker and git, not `age`: `age` is installed inside the container. It exits with an error if any check fails.
+
 **Restoring** (on a machine with the private key and the staging stack running):
 
 ```sh
