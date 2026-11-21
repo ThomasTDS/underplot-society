@@ -203,7 +203,9 @@ Alerts go to the account's alert contacts. The script warns if none is active: a
 
 ```sh
 export UPTIMEROBOT_API_KEY=...   # the Main API Key, read from a file, not typed into history
-python deploy/monitoring/uptimerobot.py --env staging   --site https://staging.underplotsociety.com.br --admin https://staging-admin.underplotsociety.com.br
+python deploy/monitoring/uptimerobot.py --env staging \
+  --site https://staging.underplotsociety.com.br \
+  --admin https://staging-admin.underplotsociety.com.br
 ```
 
 The script is idempotent, and it only touches monitors named `Underplot <env>: ...`. On the free plan the API allows 10 calls a minute; the script waits when told to.
