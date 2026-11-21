@@ -19,9 +19,9 @@ export async function proxy(request: NextRequest) {
     // An article that does not exist gets a real 404 status. The page itself cannot
     // set it: by the time it knows, the response has started streaming.
     const article = ARTICLE_PATH.exec(pathname);
-    // Client-side navigations (RSC requests) are left to the page, which shows the
+    // Client-side navigations and prefetches are left to the page, which shows the
     // same message in place.
-    if (article && !request.headers.has("rsc") && (await articleExists(firstSegment, article[1])) === false) {
+    if (article && !isClientFetch(request) && (await articleExists(firstSegment, article[1])) === false) {
       const notFound = await notFoundPage(firstSegment);
       if (notFound) return notFound;
     }
@@ -54,6 +54,17 @@ export async function proxy(request: NextRequest) {
   response.headers.set("Vary", "Accept-Language, Cookie");
   response.headers.set("Cache-Control", "private, no-store");
   return response;
+}
+
+/**
+ * A request the site's own scripts make (a click inside the site, or a prefetch), as
+ * opposed to the browser loading a page. Next removes its router headers (rsc,
+ * next-router-prefetch) before the proxy runs, so this uses the browser's own Fetch
+ * Metadata: a page load is "document", a script's fetch is "empty". Crawlers and
+ * tools that send no such header are treated as page loads, and get the real 404.
+ */
+function isClientFetch(request: NextRequest): boolean {
+  return request.headers.get("sec-fetch-dest") === "empty";
 }
 
 const ARTICLE_PATH = /^\/[^/]+\/articles\/([^/]+)\/?$/;

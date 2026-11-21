@@ -65,6 +65,22 @@ for (const locale of locales) {
   });
 }
 
+test("navigating inside the site to an unknown article shows the message in place, without reloading", async ({ page }) => {
+  await page.goto("/en");
+  await page.waitForLoadState("networkidle");
+  const documents: string[] = [];
+  page.on("request", (r) => {
+    if (r.resourceType() === "document") documents.push(r.url());
+  });
+
+  // A client-side navigation, as a link inside the site makes.
+  await page.evaluate(() => (window as unknown as { next: { router: { push(href: string): void } } }).next.router.push("/en/articles/no-such-article"));
+
+  await expect(page).toHaveURL(/\/en\/articles\/no-such-article$/);
+  await expect(page.getByRole("heading", { level: 1, name: messages.en.notFound.title })).toBeVisible();
+  expect(documents, "no full page load").toEqual([]);
+});
+
 test("the home page shows the latest articles", async ({ page }) => {
   await page.goto("/en");
   const latest = page.getByRole("region", { name: messages.en.articles.latest });
