@@ -205,7 +205,7 @@ UptimeRobot (free plan) checks every 5 minutes, from outside, what a visitor see
 Alerts go to the account's alert contacts. The script warns if none is active: an email contact must be confirmed first.
 
 ```sh
-export UPTIMEROBOT_API_KEY=...   # the Main API Key, read from a file, not typed into history
+export UPTIMEROBOT_API_KEY=...   # the main API key (API v3), read from a file, not typed into history
 python deploy/monitoring/uptimerobot.py --env staging \
   --site https://staging.underplotsociety.com.br \
   --admin https://staging-admin.underplotsociety.com.br
