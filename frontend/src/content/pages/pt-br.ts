@@ -49,7 +49,13 @@ export const pages: InstitutionalPages = {
       {
         heading: "Manifesto",
         blocks: [
-          "O texto do manifesto ainda será publicado aqui.",
+          "Videogames vão além do que vemos na tela enquanto jogamos. Cada decisão no desenvolvimento de um jogo tem um porquê, seja na direção de arte, nas mecânicas, nos limites de escopo ou no orçamento. O processo lembra o de um pintor, que reflete, projeta, administra o tempo e tenta várias formas antes de concluir a obra, com uma diferença: num jogo, essa obra é coletiva. É uma composição complexa e fascinante.",
+          "Nascemos da crença de que vale a pena conhecer os bastidores desse espetáculo. Nosso propósito é aprender sobre os jogos por dentro: o que aconteceu durante a produção e quais eventos externos podem tê-la afetado.",
+          "As decisões e os acontecimentos de um jogo se ligam como fios que conectam as cenas de uma mesma história, e são esses fios que resultam em experiências únicas. Por isso nenhum jogo é pequeno demais para ser investigado: mesmo um jogo tecnicamente fraco quase sempre marcou alguém pelo mundo. Há grande reverência pelos jogos antigos. Muitas histórias foram esquecidas ou perdidas ao longo dos anos e merecem voltar à superfície, como fósseis que, mesmo após tanto tempo, ainda nos ensinam como chegamos até aqui.",
+          "Esse olhar vale além dos videogames. Cabem aqui a indústria e o hardware, o game design dos jogos de cartas e do RPG de mesa, e os filmes, séries, desenhos e animes que tratam de jogos. Game design e engenharia reversa de sistemas e decisões estão longe de depender só da tecnologia digital.",
+          "Somos uma sociedade de pessoas curiosas e escrevemos para pessoas curiosas. Somos apaixonados por essa arte e expressamos a paixão no desejo constante de aprender mais, que celebra os bons momentos vividos com um controle nas mãos e, ao mesmo tempo, afia o olhar crítico.",
+          "Traduzimos os conceitos desse universo complexo para que qualquer pessoa os entenda. Para entrar, basta ter curiosidade: o jargão fica por nossa conta.",
+          "Não aceitamos plágio, informação falsa nem exibicionismo para chamar atenção. Quando não sabemos, dizemos que não sabemos, em vez de inventar uma narrativa. Cada palavra que publicamos exige responsabilidade, porque o que escrevemos pode ser repetido e tomado como verdade. Trabalhamos com seriedade e muito carinho em cada projeto, de fã para fã.",
         ],
       },
     ],

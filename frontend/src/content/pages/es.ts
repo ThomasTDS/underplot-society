@@ -48,7 +48,15 @@ export const pages: InstitutionalPages = {
       },
       {
         heading: "Manifiesto",
-        blocks: ["El texto del manifiesto se publicará aquí."],
+        blocks: [
+          "Los videojuegos van más allá de lo que vemos en la pantalla mientras jugamos. Cada decisión en el desarrollo de un juego tiene una razón, ya sea en la dirección de arte, en las mecánicas, en los límites de alcance o en el presupuesto. El proceso se parece al de un pintor, que reflexiona, planifica, administra su tiempo y prueba distintas formas antes de terminar la obra, con una diferencia: en un juego, esa obra es colectiva. Es una composición compleja y fascinante.",
+          "Partimos de la creencia de que vale la pena conocer lo que ocurre detrás de bambalinas en este espectáculo. Nuestro propósito es aprender sobre los juegos desde dentro: qué ocurrió durante la producción y qué eventos externos pueden haberla afectado.",
+          "Las decisiones y los acontecimientos de un juego se unen como hilos que conectan las escenas de una misma historia, y esos hilos son los que producen experiencias únicas. Por eso ningún juego es demasiado pequeño para investigarlo: incluso un juego técnicamente débil casi siempre dejó huella en alguien en algún lugar del mundo. Aquí hay una gran reverencia por los juegos antiguos. Muchas historias fueron olvidadas o se perdieron con los años y merecen volver a la superficie, como fósiles que, incluso después de tanto tiempo, todavía nos enseñan cómo llegamos hasta aquí.",
+          "Esta mirada vale más allá de los videojuegos. Caben aquí la industria y el hardware, el diseño de juegos de cartas y de rol de mesa, y las películas, series, dibujos animados y animes que tratan sobre juegos. El diseño de juegos y la ingeniería inversa de sistemas y decisiones están lejos de depender solo de la tecnología digital.",
+          "Somos una sociedad de personas curiosas y escribimos para personas curiosas. Nos apasiona este arte y expresamos esa pasión en el deseo constante de aprender más, que celebra los buenos momentos vividos con un control en las manos y, al mismo tiempo, afila la mirada crítica.",
+          "Traducimos los conceptos de este universo complejo para que cualquier persona los entienda. Para entrar, basta con tener curiosidad: de la jerga nos encargamos nosotros.",
+          "No aceptamos el plagio, la información falsa ni el exhibicionismo para llamar la atención. Cuando no sabemos algo, decimos que no lo sabemos en lugar de inventar una narrativa. Cada palabra que publicamos exige responsabilidad, porque lo que escribimos puede repetirse y tomarse como verdad. Trabajamos con seriedad y mucho cariño en cada proyecto, de fan a fan.",
+        ],
       },
     ],
   },

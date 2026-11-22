@@ -39,7 +39,15 @@ export const pages: InstitutionalPages = {
       },
       {
         heading: "Manifesto",
-        blocks: ["The manifesto will be published here."],
+        blocks: [
+          "Video games go beyond what we see on the screen while we play. Every decision in a game's development has a reason, whether in art direction, mechanics, scope limits, or budget. The process resembles that of a painter, who reflects, plans, manages their time, and tries different approaches before finishing the work, with one difference: in a game, that work is collective. It is a complex and fascinating composition.",
+          "We started from the belief that it is worth learning what happens behind the scenes of this spectacle. Our purpose is to learn about games from the inside: what happened during production and which outside events may have affected it.",
+          "The decisions and events of a game connect like threads linking the scenes of a single story, and those threads are what produce unique experiences. That is why no game is too small to investigate: even a technically weak game has almost always left a mark on someone somewhere in the world. There is deep reverence here for old games. Many stories have been forgotten or lost over the years and deserve to come back to the surface, like fossils that, even after so much time, still teach us how we got here.",
+          "This outlook goes beyond video games. The industry and hardware, the game design of card games and tabletop RPGs, and the films, TV series, cartoons, and anime about games all belong here. Game design and the reverse engineering of systems and decisions are far from depending only on digital technology.",
+          "We are a society of curious people, and we write for curious people. We are passionate about this art, and we express that passion through a constant desire to learn more, which celebrates the good moments we have had with a controller in our hands and, at the same time, sharpens our critical eye.",
+          "We translate the concepts of this complex universe so that anyone can understand them. To join, all it takes is curiosity. We take care of the jargon.",
+          "We do not accept plagiarism, false information, or showing off to get attention. When we do not know something, we say so instead of inventing a narrative. Every word we publish demands responsibility, because what we write can be repeated and taken as truth. We work with seriousness and great care on every project, from fan to fan.",
+        ],
       },
     ],
   },
