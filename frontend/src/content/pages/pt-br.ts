@@ -65,6 +65,16 @@ export const pages: InstitutionalPages = {
     ],
     sections: [
       {
+        heading: "Quem é responsável",
+        blocks: [
+          [
+            "T.T.Ravenstone, autor do site, é o responsável pelos dados tratados aqui (o controlador, na LGPD). Contato: ",
+            { text: "contato@underplotsociety.com.br", href: links.contact },
+            ".",
+          ],
+        ],
+      },
+      {
         heading: "Ao abrir uma página",
         blocks: [
           "Como em qualquer site, o seu navegador envia o seu endereço IP e a identificação do navegador. Esses dados são usados só para entregar a página e proteger o site contra abusos:",
@@ -80,8 +90,8 @@ export const pages: InstitutionalPages = {
                 { text: "Oracle Cloud", href: links.oraclePrivacy },
                 ";",
               ],
-              "quem lê o site não tem o endereço IP usado pelo próprio site, que não mantém registros de acesso;",
-              "quem acessa diretamente a API pública do site, com um programa, tem o endereço IP usado só para limitar pedidos em excesso. Ele é guardado só como um código gerado com uma chave secreta, que não permite recuperar o endereço, e apagado poucos minutos depois.",
+              "para quem só lê o site, o próprio site não usa o seu endereço IP e não mantém registros de acesso;",
+              "se você acessar diretamente a API pública do site, com um programa, o seu endereço IP é usado só para limitar pedidos em excesso. Ele é guardado só como um código gerado com uma chave secreta, que não permite recuperar o endereço, e apagado poucos minutos depois.",
             ],
           },
           "Base legal: legítimo interesse (art. 7º, IX, da LGPD), para manter o site no ar e seguro. Como esses serviços têm servidores em outros países, os dados podem ser tratados fora do Brasil.",
@@ -128,7 +138,7 @@ export const pages: InstitutionalPages = {
           [
             "Para qualquer pedido sobre os seus dados, escreva para ",
             { text: "contato@underplotsociety.com.br", href: links.contact },
-            ". A mensagem passa pelo Cloudflare e chega a uma caixa de e-mail do Google (Gmail), e o seu endereço e o que você escrever são usados só para responder.",
+            ". A mensagem passa pelo Cloudflare e chega a uma caixa de e-mail do Google (Gmail), e o seu endereço e o que você escrever são usados só para responder. As mensagens são apagadas 6 meses depois de recebidas.",
           ],
         ],
       },

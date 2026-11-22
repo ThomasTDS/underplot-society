@@ -63,6 +63,16 @@ export const pages: InstitutionalPages = {
     ],
     sections: [
       {
+        heading: "Quién es responsable",
+        blocks: [
+          [
+            "T.T.Ravenstone, autor del sitio, es el responsable de los datos que se tratan aquí (el controlador, según la LGPD). Contacto: ",
+            { text: "contato@underplotsociety.com.br", href: links.contact },
+            ".",
+          ],
+        ],
+      },
+      {
         heading: "Al abrir una página",
         blocks: [
           "Como en cualquier sitio, tu navegador envía tu dirección IP y la identificación del navegador. Se usan solo para entregar la página y proteger el sitio contra abusos:",
@@ -121,7 +131,7 @@ export const pages: InstitutionalPages = {
           [
             "Para cualquier solicitud sobre tus datos, escribe a ",
             { text: "contato@underplotsociety.com.br", href: links.contact },
-            ". El mensaje pasa por Cloudflare y llega a un buzón de Google (Gmail), y tu dirección y lo que escribas se usan solo para responder.",
+            ". El mensaje pasa por Cloudflare y llega a un buzón de Google (Gmail), y tu dirección y lo que escribas se usan solo para responder. Los mensajes se borran 6 meses después de recibirlos.",
           ],
         ],
       },
