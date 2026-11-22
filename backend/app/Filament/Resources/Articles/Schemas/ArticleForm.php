@@ -57,6 +57,7 @@ class ArticleForm
                         ->maxLength(500),
                     MarkdownEditor::make('body')
                         ->required()
+                        ->helperText('Markdown. Start sections at ##. For an image inside the text, copy its address under Images and write ![alternative text](address), with the alternative text in this language.')
                         // Uploads come with item 6.3, with type checks and alternative text.
                         ->fileAttachments(false),
                     Select::make('status')

@@ -4,6 +4,7 @@ namespace Tests\Feature\Admin;
 
 use App\Filament\Resources\Media\Pages\CreateMedia;
 use App\Filament\Resources\Media\Pages\EditMedia;
+use App\Filament\Resources\Media\Pages\ListMedia;
 use App\Models\Media;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -84,5 +85,17 @@ class MediaAdminTest extends TestCase
     public function test_the_images_page_lists_uploads(): void
     {
         $this->get('/admin/media')->assertOk();
+    }
+
+    public function test_the_images_page_gives_each_image_an_address_without_the_host(): void
+    {
+        Livewire::test(CreateMedia::class)
+            ->fillForm(['file' => UploadedFile::fake()->image('cover.png', 1200, 630), 'alt' => self::ALT])
+            ->call('create');
+        $media = Media::sole();
+
+        $this->assertSame('/storage/'.$media->path, $media->relativeUrl());
+        Livewire::test(ListMedia::class)
+            ->assertTableColumnStateSet('address', '/storage/'.$media->path, $media);
     }
 }
