@@ -25,6 +25,13 @@ class MediaTable
                     ->label('Alternative text (English)')
                     ->state(fn (Media $record) => $record->altText() ?? '—')
                     ->wrap(),
+                TextColumn::make('address')
+                    ->label('Address')
+                    ->tooltip('Click to copy. In an article: ![alternative text](address)')
+                    ->state(fn (Media $record) => $record->relativeUrl())
+                    ->copyable()
+                    ->copyMessage('Address copied')
+                    ->limit(32),
                 TextColumn::make('dimensions')
                     ->state(fn (Media $record) => "{$record->width} × {$record->height}"),
                 TextColumn::make('size_bytes')

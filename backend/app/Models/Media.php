@@ -58,6 +58,16 @@ class Media extends Model
         return Storage::disk($this->disk)->url($this->path);
     }
 
+    /**
+     * The address without the host (/storage/...), for an image inside an article's
+     * text: it works on any host the site answers on, and the site's content
+     * security policy allows images from its own host only.
+     */
+    public function relativeUrl(): string
+    {
+        return (string) parse_url($this->url(), PHP_URL_PATH);
+    }
+
     public function altText(Locale $locale = Locale::En): ?string
     {
         return $this->translations->first(fn (MediaTranslation $t) => $t->locale === $locale)?->alt_text;
