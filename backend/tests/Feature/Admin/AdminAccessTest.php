@@ -34,6 +34,14 @@ class AdminAccessTest extends TestCase
         $this->actingAs(User::factory()->withTwoFactor()->create())->get($path)->assertOk();
     }
 
+    public function test_the_root_goes_to_the_panel_without_naming_the_framework(): void
+    {
+        $response = $this->get('/');
+
+        $response->assertRedirect('/admin');
+        $this->assertStringNotContainsStringIgnoringCase('laravel', (string) $response->getContent());
+    }
+
     public function test_the_login_page_is_served(): void
     {
         $this->get('/admin/login')->assertOk();
