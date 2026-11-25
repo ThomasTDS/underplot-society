@@ -7,7 +7,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
-        "filament/filament": "5.11.1",
+        "filament/filament": "5.11.2",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
         "symfony/html-sanitizer": "^8.1"
